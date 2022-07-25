@@ -12,7 +12,6 @@ func can_handle(object: Object) -> bool:
 
 
 func parse_begin(object: Object) -> void:
-	print("parse")
 	var control = InspectorControl.instance()
 	control.edit = object
 	add_custom_control(control)

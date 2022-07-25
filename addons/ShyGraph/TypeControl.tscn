@@ -7,8 +7,6 @@
 [node name="TypeControl" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -843.0
-margin_bottom = -460.0
 rect_min_size = Vector2( 218, 196 )
 script = ExtResource( 2 )
 
@@ -19,17 +17,17 @@ margin_left = 74.0
 margin_bottom = -80.0
 
 [node name="Name" type="LineEdit" parent="Controls"]
-margin_right = 144.0
+margin_right = 950.0
 margin_bottom = 24.0
 
 [node name="Color" type="ColorPickerButton" parent="Controls"]
 margin_top = 28.0
-margin_right = 144.0
+margin_right = 950.0
 margin_bottom = 48.0
 
 [node name="Size" type="Control" parent="Controls"]
 margin_top = 52.0
-margin_right = 144.0
+margin_right = 950.0
 margin_bottom = 100.0
 rect_min_size = Vector2( 107, 48 )
 
@@ -65,15 +63,15 @@ valign = 1
 
 [node name="Multiple" type="CheckBox" parent="Controls"]
 margin_top = 104.0
-margin_right = 144.0
+margin_right = 950.0
 margin_bottom = 128.0
 text = "Multiple"
 align = 1
 
 [node name="Sides" type="Control" parent="Controls"]
 margin_top = 132.0
-margin_right = 144.0
-margin_bottom = 196.0
+margin_right = 950.0
+margin_bottom = 520.0
 rect_min_size = Vector2( 64, 64 )
 size_flags_horizontal = 3
 size_flags_vertical = 3

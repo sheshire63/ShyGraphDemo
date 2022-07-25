@@ -37,7 +37,6 @@ func _set_edit(new):
 
 
 func _ready() -> void:
-	print("ready")
 	_set_edit(edit)
 	_set_type(type)
 	_setup_side()
@@ -75,8 +74,10 @@ func _setup_side() -> void:
 	for i in edit.types:
 		list.append(str(i.name))
 	c_sides.names_y = list
+	c_box.rect_size = Vector2.ZERO
 	_update_size()
 
 
 func _update_size() -> void:
 	rect_min_size = Vector2.RIGHT * 74 + c_box.rect_size
+	rect_size = Vector2.ZERO

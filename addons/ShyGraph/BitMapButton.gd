@@ -13,11 +13,11 @@ export var unselected_color := Color.transparent
 
 var matrix := [] setget _set_matrix
 
+var _set_matrix_at_ready := false
 
 func _ready() -> void:
-	print(matrix)
-	if matrix:
-		setup()
+	if _set_matrix_at_ready:
+		_set_matrix(matrix)
 
 
 func _draw() -> void:
@@ -71,15 +71,21 @@ func _set_names_y(value: PoolStringArray) -> void:
 
 
 func setup() -> void:
+	if !is_inside_tree():
+		_set_matrix_at_ready = true
+		return
+
 	if matrix.size() > names_x.size():
 		matrix.resize(names_x.size())
 	while matrix.size() < names_x.size():
 		matrix.append([])
+
 	rect_min_size = Vector2(
 			label_size_x + (names_x.size() * 16.0),
 			label_size_y + (names_y.size() * 16.0))
 	rect_size = Vector2.ZERO
 	update()
+	_set_matrix_at_ready = false
 
 
 func _set_matrix(value) -> void:

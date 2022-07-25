@@ -36,7 +36,7 @@ data = {
 line_type = 1
 types = [ {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [ 0.0 ], [ 1.0 ], [ 0.0 ], [ 1.0 ] ],
+"connections": [ [  ], [  ], [  ], [  ] ],
 "multiple": true,
 "name": "Flow",
 "size": Vector2( 8, 8 )
