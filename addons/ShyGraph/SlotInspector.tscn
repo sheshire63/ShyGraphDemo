@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/ShyGraph/SlotInspectorControl.gd" type="Script" id=2]
+
+[node name="SlotInspector" type="VBoxContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = -877.0
+margin_bottom = -576.0
+rect_min_size = Vector2( 204, 0 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource( 2 )
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+margin_right = 204.0
+margin_bottom = 24.0
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+margin_top = 5.0
+margin_right = 69.0
+margin_bottom = 19.0
+text = "Slot Count:"
+
+[node name="Count" type="SpinBox" parent="HBoxContainer"]
+margin_left = 73.0
+margin_right = 204.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+
+[connection signal="value_changed" from="HBoxContainer/Count" to="." method="_on_Count_value_changed"]

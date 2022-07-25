@@ -1,0 +1,85 @@
+[gd_scene load_steps=7 format=2]
+
+[ext_resource path="res://addons/ShyGraph/ShyGraphEdit.gd" type="Script" id=2]
+[ext_resource path="res://Nodes/Flow.tscn" type="PackedScene" id=3]
+
+[sub_resource type="Image" id=5]
+data = {
+"data": PoolByteArray( 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42, 37, 37, 42 ),
+"format": "RGB8",
+"height": 8,
+"mipmaps": false,
+"width": 8
+}
+
+[sub_resource type="ImageTexture" id=2]
+flags = 4
+flags = 4
+image = SubResource( 5 )
+size = Vector2( 8, 8 )
+
+[sub_resource type="StyleBoxTexture" id=3]
+texture = SubResource( 2 )
+region_rect = Rect2( 0, 0, 8, 8 )
+
+[sub_resource type="Theme" id=4]
+Panel/styles/panel = SubResource( 3 )
+
+[node name="ShyGraphEdit" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+theme = SubResource( 4 )
+script = ExtResource( 2 )
+data = {
+}
+line_type = 1
+types = [ {
+"color": Color( 1, 1, 1, 1 ),
+"connections": [ [ 0.0 ], [ 1.0 ], [ 0.0 ], [ 1.0 ] ],
+"multiple": true,
+"name": "Flow",
+"size": Vector2( 8, 8 )
+}, {
+"color": Color( 1, 1, 1, 1 ),
+"connections": [ [  ], [  ], [  ], [  ] ],
+"multiple": true,
+"name": "value",
+"size": Vector2( 8, 8 )
+} ]
+
+[node name="Nodes" type="PopupMenu" parent="."]
+margin_right = 20.0
+margin_bottom = 20.0
+
+[node name="Flow" parent="." instance=ExtResource( 3 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 64.0
+margin_bottom = 64.0
+slots = [ {
+"active": true,
+"allign": 1,
+"anchor": -1,
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+} ]
+
+[node name="Flow2" parent="." instance=ExtResource( 3 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 64.0
+margin_bottom = 64.0
+slots = [ {
+"active": true,
+"allign": 2,
+"anchor": -1,
+"offset": Vector2( 0, 0 ),
+"side": 3,
+"size": Vector2( 1, 1 ),
+"type": 0
+} ]
+
+[connection signal="id_pressed" from="Nodes" to="." method="_on_Nodes_id_pressed"]

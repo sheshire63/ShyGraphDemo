@@ -1,0 +1,143 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://addons/ShyGraph/grab.png" type="Texture" id=1]
+[ext_resource path="res://addons/ShyGraph/SlotControl.gd" type="Script" id=2]
+
+[node name="SlotControl" type="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 204, 250 )
+script = ExtResource( 2 )
+
+[node name="Controls" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 74.0
+
+[node name="Active" type="CheckButton" parent="Controls"]
+margin_right = 950.0
+margin_bottom = 40.0
+size_flags_horizontal = 3
+text = "Enabled"
+
+[node name="Type" type="OptionButton" parent="Controls"]
+margin_top = 44.0
+margin_right = 950.0
+margin_bottom = 64.0
+text = "Type"
+
+[node name="Side" type="OptionButton" parent="Controls"]
+margin_top = 68.0
+margin_right = 950.0
+margin_bottom = 88.0
+text = "Side"
+
+[node name="Allign" type="OptionButton" parent="Controls"]
+margin_top = 92.0
+margin_right = 950.0
+margin_bottom = 112.0
+text = "Allignment"
+
+[node name="Offset" type="Control" parent="Controls"]
+margin_top = 116.0
+margin_right = 950.0
+margin_bottom = 164.0
+rect_min_size = Vector2( 0, 48 )
+
+[node name="OffsetX" type="SpinBox" parent="Controls/Offset"]
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = 48.0
+min_value = -256.0
+max_value = 256.0
+rounded = true
+allow_greater = true
+allow_lesser = true
+prefix = "X: "
+suffix = "px"
+
+[node name="OffsetY" type="SpinBox" parent="Controls/Offset"]
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 48.0
+min_value = -256.0
+max_value = 256.0
+rounded = true
+allow_greater = true
+allow_lesser = true
+prefix = "Y: "
+suffix = "px"
+
+[node name="Label" type="Label" parent="Controls/Offset"]
+anchor_bottom = 1.0
+margin_right = 40.0
+text = "Offset:"
+valign = 1
+
+[node name="Child" type="OptionButton" parent="Controls"]
+margin_top = 168.0
+margin_right = 950.0
+margin_bottom = 188.0
+text = "Anchor"
+
+[node name="Size" type="Control" parent="Controls"]
+margin_top = 192.0
+margin_right = 950.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 0, 48 )
+
+[node name="SizeX" type="SpinBox" parent="Controls/Size"]
+anchor_right = 1.0
+anchor_bottom = 0.5
+margin_left = 48.0
+min_value = 0.1
+max_value = 10.0
+step = 0.1
+value = 0.1
+allow_greater = true
+allow_lesser = true
+prefix = "X: "
+
+[node name="SizeY" type="SpinBox" parent="Controls/Size"]
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 48.0
+min_value = 0.1
+max_value = 10.0
+step = 0.1
+value = 0.1
+allow_greater = true
+allow_lesser = true
+prefix = "Y: "
+
+[node name="Label" type="Label" parent="Controls/Size"]
+anchor_bottom = 1.0
+text = "Size: "
+valign = 1
+
+[node name="Grab1" type="Button" parent="."]
+anchor_bottom = 0.5
+margin_right = 74.0
+margin_bottom = -12.0
+icon = ExtResource( 1 )
+flat = true
+expand_icon = true
+
+[node name="Grab2" type="Button" parent="."]
+anchor_top = 0.5
+anchor_bottom = 1.0
+margin_top = 12.0
+margin_right = 74.0
+icon = ExtResource( 1 )
+flat = true
+expand_icon = true
+
+[node name="Index" type="SpinBox" parent="."]
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_top = -12.0
+margin_right = 74.0
+margin_bottom = 12.0
+rounded = true
