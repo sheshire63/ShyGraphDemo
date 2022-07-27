@@ -441,10 +441,13 @@ func _create_node_instance(node, data := {}) -> ShyGraphNode:
 
 
 func _break_connections() -> void:
+	var list = []
 	for connection in connections:
 		var line = _create_line(connection).line
 		if Geometry.intersect_polyline_with_polygon_2d(line, [break_from, break_from + Vector2.ONE, get_local_mouse_position()]):
-			remove_connection(connection)
+			list.append(connection)
+	for i in list:
+		remove_connection(i)
 	break_from = Vector2.ZERO
 
 
@@ -468,7 +471,6 @@ func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
 	var from_slot = get_node(from.node).get_slot(from.slot)
 	var to_slot = get_node(to.node).get_slot(to.slot)
 	var conns = types[from_slot.type].connections
-	printt(conns, from_slot.side, to_slot.type)
 	if to_slot.type in conns[from_slot.side]:
 		return true
 	conns = types[to_slot.type].connections
