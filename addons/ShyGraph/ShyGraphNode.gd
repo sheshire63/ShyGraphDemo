@@ -3,7 +3,7 @@ extends Panel
 
 class_name ShyGraphNode
 
-signal offset_changed(from, to)
+signal offset_changed(new_offset)
 signal moved(amount)
 signal slot_added(slot, id)
 signal slot_removed(slot)
@@ -19,11 +19,14 @@ enum SIDE {LEFT, RIGHT, TOP, BOTTOM}
 
 var offset := Vector2.ZERO setget _set_offset
 func _set_offset(new):
-	var old := offset
 	offset = new
 	update_position()
-	emit_signal("offset_changed", old, new)
-var slots := []
+	
+var slots := [] setget _set_slots
+func _set_slots(new) -> void:
+	clear()
+	slots = new
+	setup()
 var slot_controls := {}
 var type: String
 var selected := false setget _set_selected
@@ -54,14 +57,19 @@ func _copy(copy) -> void:#if you need to set somthing in the copy.
 
 
 func _get_property_list() -> Array:
-	return [
+	var list := [
+		{
+			"name": "Slots",
+			"type": TYPE_NIL,
+			"usage": PROPERTY_USAGE_CATEGORY,
+		},
 		{
 			"name": "slots",
 			"type": TYPE_ARRAY,
-			"usage": PROPERTY_USAGE_STORAGE,
+			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint_string": "Slot",
-		}
-	]
+		}]
+	return list
 
 
 func _init() -> void:
@@ -69,8 +77,6 @@ func _init() -> void:
 	
 
 func _ready() -> void:
-	for i in slots.size():
-		add_slot_control(slots[i])
 	default_theme = theme
 	move(Vector2.ZERO)
 
@@ -88,16 +94,37 @@ func _gui_input(event: InputEvent) -> void:
 #functions----------------------------------------------------
 
 
+func clear() -> void:
+	for i in slot_controls:
+		remove_child(slot_controls[i])
+		slot_controls[i].queue_free()
+	slot_controls = {}
+	slots = []
+
+
+func setup() -> void:
+	for i in slots.size():
+		if !slots[i]:
+			slots[i] = new_slot()
+		add_slot_control(slots[i])
+
+
 func move(amount:Vector2) -> void:
 	self.offset += amount
 	emit_signal("moved", amount)
 
 
 func update_position() -> void:
+	var new: Vector2
 	if get_parent().has_method("offset_to_position"):
-		rect_position = get_parent().offset_to_position(offset)
+		new = get_parent().offset_to_position(offset)
 	else:
-		rect_position = offset
+		new = offset
+	if rect_position != new:
+		rect_position = new
+		emit_signal("offset_changed", offset)
+	for i in slot_controls:
+		slot_controls[i].update()
 
 
 func save_data() -> Dictionary:
@@ -152,8 +179,8 @@ func delete() -> void:
 #slot functions----------------------------------------------------
 
 
-func add_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := -1, type := 0, allign := 0, side := 0) -> void:
-	var slot = {
+func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := -1, type := 0, allign := 0, side := 0) -> Dictionary:
+	return {
 		"active": active,
 		"offset": offset,
 		"size": size,
@@ -162,6 +189,11 @@ func add_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, ancho
 		"allign": allign,
 		"side": side,
 	}
+	
+
+func add_slot(slot := {}) -> void:
+	if !slot:
+		slot = new_slot()
 	slots.append(slot)
 	add_slot_control(slot)
 	emit_signal("slot_added", slot, slots.size() - 1)
@@ -176,15 +208,6 @@ func remove_slot(slot:= 0) -> void:
 	emit_signal("slot_removed", old)
 
 
-func set_slot_count(count: int) -> void:
-	while slots.size() < count:
-		add_slot()
-	while slots.size() > count:
-		var slot = slots.pop_back()
-		slot_controls[slots.size()].queue_free()
-		slot_controls.erase(slots.size())
-		
-
 func get_slot_offset(slot_index: int) -> Vector2:
 	return _get_slot_offset(slots[slot_index]) + offset
 
@@ -198,6 +221,7 @@ func add_slot_control(slot: Dictionary) -> SlotButton:
 
 
 func remove_slot_control(slot: int) -> void:
+	remove_child(slot_controls[slot])
 	slot_controls[slot].queue_free()
 	slot_controls.erase(slot)
 
@@ -257,3 +281,5 @@ func _get_slot_offset(slot: Dictionary) -> Vector2:
 		SIDE.BOTTOM:
 			res.y = rect_size.y
 	return res + slot.offset
+
+

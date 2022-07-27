@@ -32,12 +32,18 @@ onready var node_menu := $Nodes
 
 export(String, DIR) var node_folder := ""
 export var data := {}
-var types := []
+var types := [] setget _set_types
 #	"name": "",
 #	"color": Color.white,
 #   "connections": [], #sides disabled flag #omit this we just need to not set it to the wrong sides in the node
 #	do we need to store the allowed sided from side(maybe even per connection)
 # }
+func _set_types(new) -> void:
+	for i in new.size():
+		if !new[i]:
+			new[i] = new_type()
+	types = new
+	update_nodes()
 export(line_types) var line_type := line_types.line
 export var  grid_step := 128
 
@@ -54,20 +60,19 @@ var is_editor := true
 
 
 func _get_property_list() -> Array:
-	return[
+	var list := [
+		{
+			"name": "Types",
+			"type": TYPE_NIL,
+			"usage": PROPERTY_USAGE_CATEGORY,
+		},
 		{
 			"name": "types",
 			"type": TYPE_ARRAY,
-			"usage": PROPERTY_USAGE_STORAGE,
-		# },
-		# {
-		# 	"name": "type_connections",
-		# 	"type": TYPE_ARRAY,
-			
-		# 	"usage": PROPERTY_USAGE_DEFAULT,
-
-		}
-	]
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint_string": "Types",
+		}]
+	return list
 
 
 func _init(work_in_editor := false) -> void: #we need this so the graph can be used in the editor
@@ -270,22 +275,14 @@ func get_type_size(type: int) -> Vector2:
 	return types[type].size
 
 
-func set_type_count(count: int) -> void:
-	while types.size() < count:
-		add_type()
-	while types.size() > count:
-		types.pop_back()
-
-
-func add_type(label := "Type", color := Color.white, size := Vector2(8, 8), multiple:= true, connections := [[], [], [], []]) -> void:
-	var new = {
+func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), multiple:= true, connections := [[], [], [], []]) -> Dictionary:
+	return {
 		"name": label,
 		"color": color,
 		"size": size,
 		"multiple": multiple,
 		"connections": connections
 		}
-	types.append(new)
 
 
 #updates pos and scale on each node
@@ -316,6 +313,10 @@ func copy_selected() -> void:
 	selected_nodes = []
 
 
+func add_type(type := {}) -> void:
+	if !type:
+		type = new_type()
+	types.append(type)
 	
 
 #--------------------------------------------------------------

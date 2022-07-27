@@ -1,4 +1,7 @@
-tool
+
 extends Control
 
-onready var icon = $Icon
+var condition = "baum"
+
+func _ready() -> void:
+	print(self["condition"])

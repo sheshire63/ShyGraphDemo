@@ -4,6 +4,8 @@ extends Control
 class_name BitMapButton
 
 
+signal changed(data)
+
 export var names_x: PoolStringArray = [] setget _set_names_x
 export var names_y: PoolStringArray = [] setget _set_names_y
 export var label_size_x := 64
@@ -46,7 +48,7 @@ func _gui_input(event: InputEvent) -> void:
 				matrix[pos.x].erase(pos.y)
 			else:
 				matrix[pos.x].append(pos.y)
-
+			emit_signal("changed", matrix)
 			update()
 
 

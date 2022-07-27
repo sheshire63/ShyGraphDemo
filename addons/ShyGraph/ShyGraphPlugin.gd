@@ -39,6 +39,8 @@ func _exit_tree() -> void:
 func _slot_inspector_changed(_sender) -> void:
 	get_editor_interface().inspect_object(_sender)
 
+
+
 # func create_node_folder() -> void:
 # 	var dir = Directory.new()
 # 	var path = ProjectSettings.get_setting(node_folder_setting)

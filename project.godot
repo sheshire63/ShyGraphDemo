@@ -12,7 +12,7 @@ _global_script_classes=[ {
 "base": "Control",
 "class": "BitMapButton",
 "language": "GDScript",
-"path": "res://addons/ShyGraph/BitMapButton.gd"
+"path": "res://addons/ShyGraph/Inspector/BitMapButton.gd"
 }, {
 "base": "Control",
 "class": "ShyGraphEdit",
@@ -29,27 +29,21 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/ShyGraph/SlotButton.gd"
 }, {
-"base": "EditorProperty",
-"class": "SlotCounter",
-"language": "GDScript",
-"path": "res://addons/ShyGraph/SlotCountProperty.gd"
-}, {
 "base": "EditorInspectorPlugin",
 "class": "SlotInspectorPlugin",
 "language": "GDScript",
-"path": "res://addons/ShyGraph/SlotInspector.gd"
+"path": "res://addons/ShyGraph/Inspector/SlotInspector.gd"
 }, {
 "base": "EditorInspectorPlugin",
 "class": "TypeInspectorPlugin",
 "language": "GDScript",
-"path": "res://addons/ShyGraph/TypeInspector.gd"
+"path": "res://addons/ShyGraph/Inspector/TypeInspector.gd"
 } ]
 _global_script_class_icons={
 "BitMapButton": "",
 "ShyGraphEdit": "",
 "ShyGraphNode": "",
 "SlotButton": "",
-"SlotCounter": "",
 "SlotInspectorPlugin": "",
 "TypeInspectorPlugin": ""
 }
