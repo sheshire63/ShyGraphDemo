@@ -378,9 +378,8 @@ func _create_line(connection: Dictionary) -> Dictionary:
 			line = curve.get_baked_points()
 			var gradient = Gradient.new()
 			gradient.colors = [from_color, to_color]
-			for i in curve.get_point_count():
-				colors.append(gradient.interpolate(i / line.size()))
-
+			for i in line.size():
+				colors.append(gradient.interpolate(1.0 / line.size() * i))
 	for i in line.size():
 		line[i] = offset_to_position(line[i])
 	return {"line": line, "colors": colors}

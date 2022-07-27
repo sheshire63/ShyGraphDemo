@@ -15,9 +15,9 @@ types = [ {
 "name": "Flow in",
 "size": Vector2( 8, 8 )
 }, {
-"color": Color( 1, 1, 1, 1 ),
+"color": Color( 0.509804, 0.0745098, 0.0745098, 1 ),
 "connections": [ [  ], [ 0.0 ], [  ], [  ] ],
-"multiple": true,
+"multiple": false,
 "name": "Flow out",
 "size": Vector2( 8, 8 )
 } ]
