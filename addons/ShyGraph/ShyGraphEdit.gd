@@ -31,7 +31,7 @@ signal node_deselected (node)
 onready var node_menu := $Nodes
 
 export(String, DIR) var node_folder := ""
-export var data := {}
+var data := {}
 var types := [] setget _set_types
 #	"name": "",
 #	"color": Color.white,
@@ -71,6 +71,11 @@ func _get_property_list() -> Array:
 			"type": TYPE_ARRAY,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint_string": "Types",
+		},
+		{
+			"name": "data",
+			"type": TYPE_DICTIONARY,
+			"usage": PROPERTY_USAGE_STORAGE,
 		}]
 	return list
 
@@ -248,9 +253,9 @@ func add_connection(from: Dictionary, to: Dictionary) -> void:
 	var from_slot = from_node.get_slot(from.slot)
 	var to_node: ShyGraphNode = get_node(to.node)
 	var to_slot = to_node.get_slot(to.slot)
-	if !from_slot.multiple:
+	if !types[from_slot.type].multiple:
 		_disconnect_slot(from.node, from.slot)
-	if !to_slot.multiple:
+	if !types[to_slot.type].multiple:
 		_disconnect_slot(to.node, to.slot)
 	connections.append({"from": from, "to": to})
 	emit_signal("connected", from, to)
@@ -462,9 +467,9 @@ func _end_select_drag() -> void:
 func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
 	var from_slot = get_node(from.node).get_slot(from.slot)
 	var to_slot = get_node(to.node).get_slot(to.slot)
-
-	for i in types[from.type].connections[from_slot.side]:
-		if to_slot.type in i:
+	var conns = types[from_slot.type].connections
+	for i in conns[from_slot.side]:
+		if to_slot.type in conns[i]:
 			return true
 	return false
 

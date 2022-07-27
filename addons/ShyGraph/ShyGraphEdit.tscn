@@ -35,10 +35,16 @@ data = {
 }
 line_type = 1
 types = [ {
-"color": Color( 0.619608, 0.929412, 0.654902, 1 ),
-"connections": [ [ 0.0 ], [  ], [  ], [  ] ],
+"color": Color( 0.717647, 0.85098, 0.560784, 1 ),
+"connections": [ [ 0.0 ], [ 0.0 ], [ 0.0 ], [ 0.0 ] ],
 "multiple": true,
 "name": "Flow",
+"size": Vector2( 8, 8 )
+}, {
+"color": Color( 1, 1, 1, 1 ),
+"connections": [ [ 0.0, 1.0 ], [ 1.0 ], [ 1.0 ], [ 1.0 ] ],
+"multiple": true,
+"name": "Value",
 "size": Vector2( 8, 8 )
 } ]
 
@@ -56,9 +62,17 @@ slots = [ {
 "allign": 1,
 "anchor": -1,
 "offset": Vector2( 0, 0 ),
-"side": 1,
+"side": 3,
 "size": Vector2( 1, 1 ),
-"type": 0
+"type": 1
+}, {
+"active": true,
+"allign": 1,
+"anchor": -1,
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 1
 } ]
 
 [node name="Flow2" parent="." instance=ExtResource( 3 )]
@@ -71,7 +85,7 @@ slots = [ {
 "allign": 1,
 "anchor": -1,
 "offset": Vector2( 0, 0 ),
-"side": 0,
+"side": 3,
 "size": Vector2( 1, 1 ),
 "type": 0
 } ]
