@@ -468,9 +468,12 @@ func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
 	var from_slot = get_node(from.node).get_slot(from.slot)
 	var to_slot = get_node(to.node).get_slot(to.slot)
 	var conns = types[from_slot.type].connections
-	for i in conns[from_slot.side]:
-		if to_slot.type in conns[i]:
-			return true
+	printt(conns, from_slot.side, to_slot.type)
+	if to_slot.type in conns[from_slot.side]:
+		return true
+	conns = types[to_slot.type].connections
+	if from_slot.type in conns[to_slot.side]:
+		return true
 	return false
 
 

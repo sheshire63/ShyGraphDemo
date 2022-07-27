@@ -63,6 +63,7 @@ func _get_segment_size() -> Vector2:
 
 
 func _set_names_x(value: PoolStringArray) -> void:
+	value.invert()
 	names_x = value
 	setup()
 
