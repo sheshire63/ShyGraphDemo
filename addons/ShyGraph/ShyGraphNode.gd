@@ -258,8 +258,17 @@ func _set_selected(new: bool) -> void:
 
 func _get_slot_offset(slot: Dictionary) -> Vector2:
 	var anchor_rect: Rect2
-	if slot.anchor >= 0 and get_child_count() < slot.anchor:
-		anchor_rect = get_child(slot.anchor).get_rect()
+	var child
+	if slot.anchor >= 0:
+		var pos = slot.anchor
+		for i in get_children():
+			if !i is SlotButton:
+				pos -= 1
+			if pos < 0:
+				child = i
+				break
+	if child:
+		anchor_rect = child.get_rect()
 	else:
 		anchor_rect = get_rect()
 		anchor_rect.position = Vector2.ZERO

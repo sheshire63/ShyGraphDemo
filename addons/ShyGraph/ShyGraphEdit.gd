@@ -165,6 +165,10 @@ func _on_Nodes_id_pressed(id:int) -> void:
 	node.offset = position_to_offset(node_menu.rect_position)
 
 
+# func _exit_tree() -> void:
+# 	data = save_data()
+
+
 func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
 	for i in selected_nodes:
 		if i == node:
