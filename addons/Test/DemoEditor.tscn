@@ -1,14 +1,13 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://addons/ShyGraph/ShyGraphNode.gd" type="Script" id=1]
 [ext_resource path="res://addons/ShyGraph/ShyGraphEdit.tscn" type="PackedScene" id=2]
-[ext_resource path="res://EditorTest.gd" type="Script" id=3]
-[ext_resource path="res://addons/Test/Demo.gd" type="Script" id=4]
+[ext_resource path="res://addons/Test/Demo.gd" type="Script" id=3]
 
 [node name="Demo" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 4 )
+script = ExtResource( 3 )
 
 [node name="ShyGraphEdit" parent="." instance=ExtResource( 2 )]
 types = [ {
@@ -32,8 +31,8 @@ rect_min_size = Vector2( 64, 64 )
 script = ExtResource( 1 )
 slots = [ {
 "active": true,
-"allign": 0,
-"anchor": "Button",
+"allign": 1,
+"anchor": "",
 "offset": Vector2( 0, 0 ),
 "side": 0,
 "size": Vector2( 1, 1 ),
@@ -57,6 +56,3 @@ margin_left = -6.0
 margin_top = -10.0
 margin_right = 6.0
 margin_bottom = 10.0
-
-[node name="EditorTest" type="Node" parent="."]
-script = ExtResource( 3 )

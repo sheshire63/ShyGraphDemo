@@ -179,7 +179,7 @@ func delete() -> void:
 #slot functions----------------------------------------------------
 
 
-func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := -1, type := 0, allign := 0, side := 0) -> Dictionary:
+func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := "", type := 0, allign := 0, side := 0) -> Dictionary:
 	return {
 		"active": active,
 		"offset": offset,
@@ -257,18 +257,19 @@ func _set_selected(new: bool) -> void:
 
 
 func _get_slot_offset(slot: Dictionary) -> Vector2:
-	var anchor_rect: Rect2
-	var child
-	if slot.anchor >= 0:
-		var pos = slot.anchor
-		for i in get_children():
-			if !i is SlotButton:
-				pos -= 1
-			if pos < 0:
-				child = i
-				break
-	if child:
-		anchor_rect = child.get_rect()
+	var anchor_rect
+	if slot.anchor:
+		if has_node(slot.anchor):
+			var anchor_node = get_node(slot.anchor)
+			if not anchor_node is Control:
+				printerr("node `%S` is not a Control"%[slot.anchor])
+			anchor_rect = anchor_node.get_rect()
+			var parent = anchor_node.get_parent()
+			while parent != self:
+				anchor_rect.position += parent.rect_position
+				parent = parent.get_parent()
+		else:
+			printerr("node `%S` not found"%[slot.anchor])
 	else:
 		anchor_rect = get_rect()
 		anchor_rect.position = Vector2.ZERO

@@ -79,7 +79,7 @@ margin_right = 40.0
 text = "Offset:"
 valign = 1
 
-[node name="Child" type="OptionButton" parent="Box"]
+[node name="AnchorChild" type="LineEdit" parent="Box"]
 margin_top = 168.0
 margin_right = 1024.0
 margin_bottom = 188.0

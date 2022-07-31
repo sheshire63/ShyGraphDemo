@@ -7,15 +7,15 @@ var slot_inspector := SlotInspectorPlugin.new()
 var type_inspector := TypeInspectorPlugin.new()
 
 
-func enable_plugin() -> void:
-	var input = InputEventKey.new()
-	input.scancode = KEY_CONTROL
-	ProjectSettings.set_setting("input/" + ShyGraphEdit.break_line_key, 
-		{
-			"deadzone": 0.5,
-			"events": [input],
-		})
-	ProjectSettings.save()
+# func enable_plugin() -> void:
+# 	var input = InputEventKey.new()
+# 	input.scancode = KEY_CONTROL
+# 	ProjectSettings.set_setting("input/" + ShyGraphEdit.break_line_key, 
+# 		{
+# 			"deadzone": 0.5,
+# 			"events": [input],
+# 		})
+# 	ProjectSettings.save()
 	# create_node_folder()
 
 

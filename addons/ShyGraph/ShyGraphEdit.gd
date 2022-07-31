@@ -12,7 +12,7 @@ const SIDES = {
 		ShyGraphNode.SIDE.TOP: Vector2.UP,
 		ShyGraphNode.SIDE.BOTTOM: Vector2.DOWN,
 		}
-const break_line_key := "shy_graph_break_lines"
+# const break_line_key := "shy_graph_break_lines"
 
 
 signal connected (from, to)
@@ -55,7 +55,7 @@ var hover_slot := {}
 var break_from: Vector2
 var selected_nodes := []
 var select_from : Vector2
-
+var offset_rect := get_rect()
 var is_editor := true
 
 
@@ -118,10 +118,11 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if is_editor:
 		return
-	if event.is_action_released(break_line_key):
-		break_from = Vector2.ZERO
-		update()
+	# if event.is_action_released(break_line_key):
 	if event is InputEventKey:
+		if event.scancode == KEY_CONTROL:
+			break_from = Vector2.ZERO
+			update()
 		if event.scancode == KEY_DELETE:
 			delete_selected()
 
@@ -133,29 +134,27 @@ func _gui_input(event: InputEvent) -> void:
 		if event.is_pressed():
 			if event.button_index == BUTTON_LEFT:
 				create_connection_from = {}
-				if Input.is_action_pressed(break_line_key):
+				if Input.is_key_pressed(KEY_CONTROL): #is_action_pressed(break_line_key):
 					break_from = get_local_mouse_position()
 				else:
 					_start_select_drag()
 				update()
 			if event.button_index == BUTTON_RIGHT:
-				node_menu.popup(Rect2(event.position, node_menu.rect_size))
+				node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
 			if event.button_index == BUTTON_WHEEL_UP:
 				scale(0.909091)
 			if event.button_index == BUTTON_WHEEL_DOWN:
 				scale(1.1)
 		else:
 			if event.button_index == BUTTON_LEFT:
-				if Input.is_action_pressed(break_line_key):
+				if Input.is_key_pressed(KEY_CONTROL):#is_action_pressed(break_line_key):
 					_break_connections()
 				_end_select_drag()
 				
 	if event is InputEventMouseMotion:
 		if Input.is_mouse_button_pressed(BUTTON_MIDDLE):
-			transform = transform.translated(-event.relative)
-			update()
-			update_nodes()
-		if Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_action_pressed(break_line_key):
+			move(-event.relative)
+		if Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):#.is_action_pressed(break_line_key):
 			update()
 			
 
@@ -190,6 +189,12 @@ func _on_node_deselected(node: ShyGraphNode) -> void:
 func _on_node_request_deselect() -> void:
 	deselect()
 #--------------------------------------------------------------
+
+
+func move(amount: Vector2) -> void:
+	transform = transform.translated(amount)
+	update()
+	update_nodes()
 
 
 func deselect() -> void:
