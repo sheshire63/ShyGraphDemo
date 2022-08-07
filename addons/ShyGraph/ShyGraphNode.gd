@@ -106,7 +106,7 @@ func setup() -> void:
 	for i in slots.size():
 		if !slots[i]:
 			slots[i] = new_slot()
-		add_slot_control(slots[i])
+		add_slot_control(slots[i], i)
 
 
 func move(amount:Vector2) -> void:
@@ -197,7 +197,7 @@ func add_slot(slot := {}) -> void:
 	if !slot:
 		slot = new_slot()
 	slots.append(slot)
-	add_slot_control(slot)
+	add_slot_control(slot, slots.size() - 1)
 	emit_signal("slot_added", slot, slots.size() - 1)
 
 
@@ -214,8 +214,8 @@ func get_slot_offset(slot_index: int) -> Vector2:
 	return _get_slot_offset(slots[slot_index]) + offset
 
 
-func add_slot_control(slot: Dictionary) -> SlotButton:
-	var control = SlotButton.new()
+func add_slot_control(slot: Dictionary, index: int) -> SlotButton:
+	var control = SlotButton.new(index)
 	add_child(control)
 	control.slot = slot
 	slot_controls[slots.find(slot)] = control

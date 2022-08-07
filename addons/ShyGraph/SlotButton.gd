@@ -9,11 +9,13 @@ var node
 var slot_index: int# todo
 
 var slot := {} setget _set_slot
-
 func _set_slot(new) -> void:
 	slot = new
 	update_position()
 
+
+func _init(pos := 0) -> void:
+	slot_index = pos
 
 
 func _ready() -> void:
@@ -29,14 +31,14 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
 		var slot_data = {
-			"slot": node.slots.find(slot),
+			"slot": slot_index,
 			"node": node.name,
 		}
 		if event.is_pressed():
 			edit.init_drag(slot_data)
 	if event is InputEventMouseMotion:
 		edit.hover_slot = {
-			"slot": node.slots.find(slot),
+			"slot": slot_index,
 			"node": node.name,
 		}
 
