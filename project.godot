@@ -62,7 +62,7 @@ shy_graph_break_lines={
 [application]
 
 config/name="ShyGraphV2"
-run/main_scene="res://addons/ShyGraph/ShyGraphEdit.tscn"
+run/main_scene="res://Demo.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]

@@ -3,7 +3,7 @@
 [ext_resource path="res://addons/ShyGraph/ShyGraphNode.gd" type="Script" id=1]
 [ext_resource path="res://addons/ShyGraph/ShyGraphEdit.tscn" type="PackedScene" id=2]
 [ext_resource path="res://EditorTest.gd" type="Script" id=3]
-[ext_resource path="res://addons/Test/Demo.gd" type="Script" id=4]
+[ext_resource path="res://Demo.gd" type="Script" id=4]
 
 [node name="Demo" type="Control"]
 anchor_right = 1.0
@@ -58,5 +58,96 @@ margin_top = -10.0
 margin_right = 6.0
 margin_bottom = 10.0
 
-[node name="EditorTest" type="Node" parent="."]
+[node name="EditorTest2" type="Node" parent="."]
 script = ExtResource( 3 )
+data = {
+"connections": [ {
+"from": {
+"node": "ShyGraphNode",
+"slot": 1
+},
+"to": {
+"node": "ShyGraphNode2",
+"slot": 0
+}
+} ],
+"nodes": {
+"ShyGraphNode": {
+"data": {
+},
+"offset": Vector2( 297.9, 120.5 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode2": {
+"data": {
+},
+"offset": Vector2( 629, 177 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode3": {
+"data": {
+},
+"offset": Vector2( 456.7, -1.80013 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+}
+}
+}
+
+[node name="EditorTest3" type="Node" parent="."]
+script = ExtResource( 3 )
+data = {
+"connections": [  ],
+"nodes": {
+}
+}

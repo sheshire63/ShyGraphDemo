@@ -6,6 +6,7 @@ class_name SlotButton
 
 var edit
 var node
+var slot_index: int# todo
 
 var slot := {} setget _set_slot
 

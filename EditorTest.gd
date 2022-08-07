@@ -6,3 +6,4 @@ class_name EditorGraph
 
 export var data := {}
 
+

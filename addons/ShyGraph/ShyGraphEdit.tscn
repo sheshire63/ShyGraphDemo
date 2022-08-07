@@ -10,8 +10,6 @@ mouse_filter = 1
 script = ExtResource( 2 )
 line_type = 1
 types = [  ]
-data = {
-}
 
 [node name="Nodes" type="PopupMenu" parent="."]
 margin_right = 20.0

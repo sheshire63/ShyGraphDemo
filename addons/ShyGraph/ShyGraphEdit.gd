@@ -24,14 +24,13 @@ signal node_removed (node) #not called on clear
 signal node_moved (node)
 signal node_selected (node)
 signal node_deselected (node)
-
+signal saved(_data)
 
 
 
 onready var node_menu := $Nodes
 
 export(String, DIR) var node_folder := ""
-var data := {}
 var types := [] setget _set_types
 #	"name": "",
 #	"color": Color.white,
@@ -56,7 +55,11 @@ var break_from: Vector2
 var selected_nodes := []
 var select_from : Vector2
 var offset_rect := get_rect()
-var is_editor := true
+var is_editor := true setget _set_is_editor
+func _set_is_editor(new) -> void:
+	is_editor = new
+	if !new:
+		_load_nodes()
 
 
 func _get_property_list() -> Array:
@@ -72,11 +75,7 @@ func _get_property_list() -> Array:
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint_string": "Types",
 		},
-		{
-			"name": "data",
-			"type": TYPE_DICTIONARY,
-			"usage": PROPERTY_USAGE_STORAGE,
-		}]
+	]
 	return list
 
 
@@ -161,11 +160,7 @@ func _gui_input(event: InputEvent) -> void:
 func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
-	node.offset = position_to_offset(node_menu.rect_position)
-
-
-# func _exit_tree() -> void:
-# 	data = save_data()
+	node.offset = position_to_offset(get_local_mouse_position())
 
 
 func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
@@ -189,6 +184,15 @@ func _on_node_deselected(node: ShyGraphNode) -> void:
 func _on_node_request_deselect() -> void:
 	deselect()
 #--------------------------------------------------------------
+
+func clear() -> void:
+	connections = []
+	create_connection_from = {}
+	selected_nodes = []
+	for i in get_children():
+		if i is ShyGraphNode:
+			i.queue_free()
+	update()
 
 
 func move(amount: Vector2) -> void:
@@ -242,17 +246,23 @@ func position_to_offset(position: Vector2) -> Vector2:
 
 
 func save_data() -> Dictionary:
-	data = {"nodes": {}, "connections": []}
+	var data = {"nodes": {}, "connections": connections}
 	for child in get_children():
 		if child is ShyGraphNode:
 			data.nodes[child.name] = child.save_data()
+	emit_signal("saved", data)
 	return data
 
 
 func load_data(data: Dictionary) -> void:
-	connections = data.connections
-	for i in data.nodes:
-		var node = _create_node_instance(nodes[i.type], data.nodes[i])
+	clear()
+	if data:
+		connections = data.connections
+		for i in data.nodes:
+			var node_data = data.nodes[i]
+			printt(node_data.type, nodes.keys())#on load the type get propable not set
+			var node = _create_node_instance(nodes[node_data.type], node_data)
+			node.name = i
 		
 
 func add_connection(from: Dictionary, to: Dictionary) -> void:
@@ -444,7 +454,7 @@ func _create_node_instance(node, data := {}) -> ShyGraphNode:
 		node.connect("selected", self, "_on_node_selected", [node])
 		node.connect("deselected", self, "_on_node_deselected", [node])
 		node.connect("request_deselect", self, "_on_node_request_deselect")
-		add_child(node)
+		add_child(node, true)
 	return node
 
 

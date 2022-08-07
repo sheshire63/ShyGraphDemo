@@ -10,4 +10,6 @@ func set_edit() -> void:
 
 
 func set_graph(data: EditorGraph) -> void:
-	editor.data = data.data
+	editor.load_data = data.data
+
+

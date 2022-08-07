@@ -141,6 +141,8 @@ func load_data(data:= {}) -> void:
 		offset = data["offset"]
 	if "slots" in data:
 		slots = data["slots"]
+	if "type" in data:
+		type = data["type"]
 	if "data" in data:
 		_load_data(data.data)
 

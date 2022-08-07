@@ -1,0 +1,60 @@
+{
+"connections": [ {
+"from": {
+"node": "ShyGraphNode",
+"slot": 1
+},
+"to": {
+"node": "ShyGraphNode9",
+"slot": 0
+}
+} ],
+"nodes": {
+"@ShyGraphNode@9": {
+"data": {
+},
+"offset": Vector2( 561, 287 ),
+"slots": [ {
+"active": true,
+"allign": 0,
+"anchor": "Button",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode": {
+"data": {
+},
+"offset": Vector2( 391, 178 ),
+"slots": [ {
+"active": true,
+"allign": 0,
+"anchor": "Button",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+}
+}
+}
