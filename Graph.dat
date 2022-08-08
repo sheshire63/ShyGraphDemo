@@ -68,7 +68,7 @@
 "ShyGraphNode3": {
 "data": {
 },
-"offset": Vector2( 350, 123 ),
+"offset": Vector2( 406, 96 ),
 "slots": [ {
 "active": true,
 "allign": 0,

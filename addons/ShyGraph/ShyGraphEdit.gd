@@ -97,11 +97,12 @@ func _input(event: InputEvent) -> void:
 	if is_editor:
 		return
 	if event is InputEventKey:
-		if event.scancode == KEY_CONTROL:
-			break_from = Vector2.ZERO
-			update()
-		if event.scancode == KEY_DELETE:
-			delete_selected()
+		match event.scancode:
+			KEY_CONTROL:
+				break_from = Vector2.ZERO
+				update()
+			KEY_DELETE:
+				delete_selected()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -109,24 +110,21 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton:
 		if event.is_pressed():
-			if event.button_index == BUTTON_LEFT:
-				create_connection_from = {}
-				if Input.is_key_pressed(KEY_CONTROL):
-					break_from = position_to_offset(get_local_mouse_position())
-				else:
-					_start_select_drag()
-				update()
-			if event.button_index == BUTTON_RIGHT:
-				node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
-			
+			match event.button_index:
+				BUTTON_LEFT:
+					create_connection_from = {}
+					if Input.is_key_pressed(KEY_CONTROL):
+						break_from = position_to_offset(get_local_mouse_position())
+					else:
+						_start_select_drag()
+					update()
+				BUTTON_RIGHT:
+					node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
 		else:
 			if event.button_index == BUTTON_LEFT:
 				if Input.is_key_pressed(KEY_CONTROL):
 					_break_connections()
 				_end_select_drag()
-	if event is InputEventMouseMotion:
-		if Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):
-			update()
 
 
 func _on_transform_changed() -> void:
