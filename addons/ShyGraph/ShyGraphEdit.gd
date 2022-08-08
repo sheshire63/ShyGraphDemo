@@ -1,5 +1,5 @@
 tool 
-extends Control
+extends ShyCanvas
 
 
 class_name ShyGraphEdit
@@ -24,8 +24,6 @@ signal node_removed (node) #not called on clear
 signal node_moved (node)
 signal node_selected (node)
 signal node_deselected (node)
-signal saved(_data)
-
 
 
 onready var node_menu := $Nodes
@@ -44,22 +42,15 @@ func _set_types(new) -> void:
 	types = new
 	update_nodes()
 export(line_types) var line_type := line_types.line
-export var  grid_step := 128
 
 var nodes := {}
-var transform := Transform2D.IDENTITY
 var connections := []
 var create_connection_from := {}
 var hover_slot := {}
 var break_from: Vector2
 var selected_nodes := []
 var select_from : Vector2
-var offset_rect := get_rect()
-var is_editor := true setget _set_is_editor
-func _set_is_editor(new) -> void:
-	is_editor = new
-	if !new:
-		_load_nodes()
+
 
 
 func _get_property_list() -> Array:
@@ -79,13 +70,6 @@ func _get_property_list() -> Array:
 	return list
 
 
-func _init(work_in_editor := false) -> void: #we need this so the graph can be used in the editor
-	if Engine.editor_hint:
-		is_editor = !work_in_editor
-	else:
-		is_editor = false
-		
-
 func _ready() -> void:
 	if is_editor:
 		return
@@ -93,7 +77,6 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	_draw_grid()
 	for i in connections:#todo move the get stuff to draw_link
 		var line_data = _create_line(i)
 		draw_polyline_colors(line_data.line, line_data.colors)
@@ -117,7 +100,6 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if is_editor:
 		return
-	# if event.is_action_released(break_line_key):
 	if event is InputEventKey:
 		if event.scancode == KEY_CONTROL:
 			break_from = Vector2.ZERO
@@ -140,22 +122,16 @@ func _gui_input(event: InputEvent) -> void:
 				update()
 			if event.button_index == BUTTON_RIGHT:
 				node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
-			if event.button_index == BUTTON_WHEEL_UP:
-				scale(0.909091)
-			if event.button_index == BUTTON_WHEEL_DOWN:
-				scale(1.1)
+			
 		else:
 			if event.button_index == BUTTON_LEFT:
 				if Input.is_key_pressed(KEY_CONTROL):#is_action_pressed(break_line_key):
 					_break_connections()
 				_end_select_drag()
-				
 	if event is InputEventMouseMotion:
-		if Input.is_mouse_button_pressed(BUTTON_MIDDLE):
-			move(-event.relative)
 		if Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):#.is_action_pressed(break_line_key):
 			update()
-			
+
 
 func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
@@ -183,6 +159,12 @@ func _on_node_deselected(node: ShyGraphNode) -> void:
 
 func _on_node_request_deselect() -> void:
 	deselect()
+
+
+func _on_transform_changed() -> void:
+	update_nodes()
+
+
 #--------------------------------------------------------------
 
 func clear() -> void:
@@ -192,13 +174,7 @@ func clear() -> void:
 	for i in get_children():
 		if i is ShyGraphNode:
 			i.queue_free()
-	update()
-
-
-func move(amount: Vector2) -> void:
-	transform = transform.translated(amount)
-	update()
-	update_nodes()
+	reset()
 
 
 func deselect() -> void:
@@ -221,28 +197,11 @@ func select_multiple(nodes: Array) -> void:
 		select(i)	
 
 
-func scale(scale: float) -> void:
-	var mouse_from = position_to_offset(get_local_mouse_position())
-	transform = transform.scaled(Vector2.ONE * scale)
-	var mouse_to = position_to_offset(get_local_mouse_position())
-	transform.origin += mouse_from - mouse_to
-	update()
-	update_nodes()
-
-
 func init_drag(slot: Dictionary) -> void:
 	if create_connection_from:
 		_end_drag(slot)
 	else:
 		_start_drag(slot)
-
-
-func offset_to_position(offset: Vector2) -> Vector2:
-	return transform.affine_inverse().xform(offset)
-
-
-func position_to_offset(position: Vector2) -> Vector2:
-	return transform.xform(position)
 
 
 func save_data() -> Dictionary:
@@ -341,25 +300,18 @@ func add_type(type := {}) -> void:
 	if !type:
 		type = new_type()
 	types.append(type)
-	
+
 
 #--------------------------------------------------------------
 
 
-func _draw_grid() -> void:
-	var from = position_to_offset(Vector2.ZERO)
-	var to = position_to_offset(rect_size)
-	var x = stepify(from.x, grid_step)
-	var test = Vector2(128, 128)
-	while x < to.x:
-		var pos = offset_to_position(Vector2.ONE * x)
-		draw_line(Vector2(pos.x, 0), Vector2(pos.x, rect_size.y), Color.gray)
-		x += grid_step
-	var y = stepify(from.y, grid_step)
-	while y < to.y:
-		var pos = offset_to_position(Vector2.ONE * y)
-		draw_line(Vector2(0, pos.y), Vector2(rect_size.x, pos.y), Color.gray)
-		y += grid_step
+func _set_is_editor(new) -> void:
+	._set_is_editor(new)
+	if !new:
+		_load_nodes()
+
+
+#
 
 
 func _create_line(connection: Dictionary) -> Dictionary:

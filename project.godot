@@ -20,6 +20,11 @@ _global_script_classes=[ {
 "path": "res://EditorTest.gd"
 }, {
 "base": "Control",
+"class": "ShyCanvas",
+"language": "GDScript",
+"path": "res://addons/ShyGraph/ShyCanvas.gd"
+}, {
+"base": "ShyCanvas",
 "class": "ShyGraphEdit",
 "language": "GDScript",
 "path": "res://addons/ShyGraph/ShyGraphEdit.gd"
@@ -47,6 +52,7 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "BitMapButton": "",
 "EditorGraph": "",
+"ShyCanvas": "",
 "ShyGraphEdit": "",
 "ShyGraphNode": "",
 "SlotButton": "",
