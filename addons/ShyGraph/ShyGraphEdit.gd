@@ -85,16 +85,8 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var tf = transform.affine_inverse()
 	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
-	for i in connections:
-		var line_data = _create_line(i)
-		draw_polyline_colors(line_data.line, line_data.colors, line_width)
-	if create_connection_from:# todo add check
-		if !hover_slot or _is_connection_allowed(create_connection_from, hover_slot):
-			var line_data = _create_line({
-				"from": create_connection_from,
-				"to": hover_slot,
-				})
-			draw_polyline_colors(line_data.line, line_data.colors)
+	_draw_connections()
+	_draw_create_connection()
 	if break_from:
 		draw_line(break_from, position_to_offset(get_local_mouse_position()), Color.red)
 	if select_from:
@@ -137,6 +129,10 @@ func _gui_input(event: InputEvent) -> void:
 			update()
 
 
+func _on_transform_changed() -> void:
+	update_nodes()
+
+
 func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
@@ -161,15 +157,20 @@ func _on_node_deselected(node: ShyGraphNode) -> void:
 	selected_nodes.erase(node)
 
 
+func _on_node_delete(node) -> void:
+	var to_remove = []
+	for i in connections:
+		if i.from.node == node.name or i.to.node == node.name:
+			to_remove.append(i)
+	for i in to_remove:
+		remove_connection(i)
+
+
 func _on_node_request_deselect() -> void:
 	deselect()
 
 
-func _on_transform_changed() -> void:
-	update_nodes()
-
-
-#--------------------------------------------------------------
+# global
 
 func clear() -> void:
 	connections = []
@@ -223,7 +224,6 @@ func load_data(data: Dictionary) -> void:
 		connections = data.connections
 		for i in data.nodes:
 			var node_data = data.nodes[i]
-			printt(node_data.type, nodes.keys())#on load the type get propable not set
 			var node = _create_node_instance(nodes[node_data.type], node_data)
 			node.name = i
 		
@@ -245,6 +245,7 @@ func add_connection(from: Dictionary, to: Dictionary) -> void:
 
 func remove_connection(connection: Dictionary) -> void:
 	connections.erase(connection)
+	update()
 	emit_signal("disconnected", connection.from, connection.to)
 
 
@@ -306,7 +307,7 @@ func add_type(type := {}) -> void:
 	types.append(type)
 
 
-#--------------------------------------------------------------
+# overrides
 
 
 func _set_is_editor(new) -> void:
@@ -315,7 +316,7 @@ func _set_is_editor(new) -> void:
 		_load_nodes()
 
 
-#
+# private
 
 
 func _create_line(connection: Dictionary) -> Dictionary:
@@ -356,6 +357,22 @@ func _create_line(connection: Dictionary) -> Dictionary:
 			for i in line.size():
 				colors.append(gradient.interpolate(1.0 / line.size() * i))
 	return {"line": line, "colors": colors}
+
+
+func _draw_connections() -> void:
+	for i in connections:
+		var line_data = _create_line(i)
+		draw_polyline_colors(line_data.line, line_data.colors, line_width)
+
+
+func _draw_create_connection() -> void:
+	if create_connection_from:# todo add check
+		if !hover_slot or _is_connection_allowed(create_connection_from, hover_slot):
+			var line_data = _create_line({
+				"from": create_connection_from,
+				"to": hover_slot,
+				})
+			draw_polyline_colors(line_data.line, line_data.colors)
 
 
 func _load_nodes() -> void:
@@ -407,6 +424,7 @@ func _create_node_instance(node, data := {}) -> ShyGraphNode:
 		node.connect("moved", self, "_on_node_moved", [node])
 		node.connect("selected", self, "_on_node_selected", [node])
 		node.connect("deselected", self, "_on_node_deselected", [node])
+		node.connect("delete", self, "_on_node_delete", [node])
 		node.connect("request_deselect", self, "_on_node_request_deselect")
 		add_child(node, true)
 	return node
