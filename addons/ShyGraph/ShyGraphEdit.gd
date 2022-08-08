@@ -77,18 +77,24 @@ func _ready() -> void:
 	_load_nodes()
 
 
+func _process(delta: float) -> void:
+	if create_connection_from or break_from or select_from:
+		update()
+
+
 func _draw() -> void:
 	var tf = transform.affine_inverse()
 	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
-	for i in connections:#todo move the get stuff to draw_link
+	for i in connections:
 		var line_data = _create_line(i)
 		draw_polyline_colors(line_data.line, line_data.colors, line_width)
-	if create_connection_from:
-		var line_data = _create_line({
-			"from": create_connection_from,
-			"to": hover_slot,
-			})
-		draw_polyline_colors(line_data.line, line_data.colors)
+	if create_connection_from:# todo add check
+		if !hover_slot or _is_connection_allowed(create_connection_from, hover_slot):
+			var line_data = _create_line({
+				"from": create_connection_from,
+				"to": hover_slot,
+				})
+			draw_polyline_colors(line_data.line, line_data.colors)
 	if break_from:
 		draw_line(break_from, position_to_offset(get_local_mouse_position()), Color.red)
 	if select_from:
@@ -127,9 +133,7 @@ func _gui_input(event: InputEvent) -> void:
 					_break_connections()
 				_end_select_drag()
 	if event is InputEventMouseMotion:
-		if create_connection_from or break_from or select_from:
-			update()
-		elif Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):
+		if Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):
 			update()
 
 

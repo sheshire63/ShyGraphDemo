@@ -1,20 +1,20 @@
 {
 "connections": [ {
 "from": {
-"node": "ShyGraphNode",
+"node": "ShyGraphNode9",
 "slot": 1
 },
 "to": {
-"node": "ShyGraphNode9",
+"node": "ShyGraphNode",
 "slot": 0
 }
 }, {
 "from": {
-"node": "ShyGraphNode9",
+"node": "ShyGraphNode",
 "slot": 1
 },
 "to": {
-"node": "ShyGraphNode",
+"node": "ShyGraphNode9",
 "slot": 0
 }
 } ],
@@ -23,6 +23,29 @@
 "data": {
 },
 "offset": Vector2( 289.198, 291.8 ),
+"slots": [ {
+"active": true,
+"allign": 0,
+"anchor": "Button",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode2": {
+"data": {
+},
+"offset": Vector2( 520, 279 ),
 "slots": [ {
 "active": true,
 "allign": 0,
