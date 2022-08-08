@@ -77,6 +77,8 @@ func _ready() -> void:
 
 
 func _draw() -> void:
+	var tf = transform.affine_inverse()
+	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
 	for i in connections:#todo move the get stuff to draw_link
 		var line_data = _create_line(i)
 		draw_polyline_colors(line_data.line, line_data.colors)
@@ -87,14 +89,9 @@ func _draw() -> void:
 			})
 		draw_polyline_colors(line_data.line, line_data.colors)
 	if break_from:
-		draw_line(break_from, get_local_mouse_position(), Color.red)
+		draw_line(break_from, position_to_offset(get_local_mouse_position()), Color.red)
 	if select_from:
-		draw_rect(Rect2(select_from, get_local_mouse_position() - select_from), Color(0.5, 0.5, 0.5, 0.5))
-
-
-func _process(delta: float) -> void:
-	if create_connection_from or break_from or select_from:
-		update()
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), Color(0.5, 0.5, 0.5, 0.5))
 
 
 func _input(event: InputEvent) -> void:
@@ -115,8 +112,8 @@ func _gui_input(event: InputEvent) -> void:
 		if event.is_pressed():
 			if event.button_index == BUTTON_LEFT:
 				create_connection_from = {}
-				if Input.is_key_pressed(KEY_CONTROL): #is_action_pressed(break_line_key):
-					break_from = get_local_mouse_position()
+				if Input.is_key_pressed(KEY_CONTROL):
+					break_from = position_to_offset(get_local_mouse_position())
 				else:
 					_start_select_drag()
 				update()
@@ -125,11 +122,13 @@ func _gui_input(event: InputEvent) -> void:
 			
 		else:
 			if event.button_index == BUTTON_LEFT:
-				if Input.is_key_pressed(KEY_CONTROL):#is_action_pressed(break_line_key):
+				if Input.is_key_pressed(KEY_CONTROL):
 					_break_connections()
 				_end_select_drag()
 	if event is InputEventMouseMotion:
-		if Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):#.is_action_pressed(break_line_key):
+		if create_connection_from or break_from or select_from:
+			update()
+		elif Input.is_mouse_button_pressed(BUTTON_LEFT) and Input.is_key_pressed(KEY_CONTROL):
 			update()
 
 
@@ -334,7 +333,7 @@ func _create_line(connection: Dictionary) -> Dictionary:
 		to_side = SIDES[to_slot.side]
 	else:
 		to_pos = position_to_offset(get_local_mouse_position())
-	
+
 	var line : PoolVector2Array = []
 	var colors : PoolColorArray = []
 	match line_type:
@@ -351,8 +350,6 @@ func _create_line(connection: Dictionary) -> Dictionary:
 			gradient.colors = [from_color, to_color]
 			for i in line.size():
 				colors.append(gradient.interpolate(1.0 / line.size() * i))
-	for i in line.size():
-		line[i] = offset_to_position(line[i])
 	return {"line": line, "colors": colors}
 
 
@@ -422,11 +419,11 @@ func _break_connections() -> void:
 
 
 func _start_select_drag() -> void:
-	select_from = get_local_mouse_position()
+	select_from = position_to_offset(get_local_mouse_position())
 
 
 func _end_select_drag() -> void:
-	var rect = Rect2(select_from, get_local_mouse_position() - select_from)
+	var rect = Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from)
 	var nodes := []
 	for i in get_children():
 		if i is ShyGraphNode:

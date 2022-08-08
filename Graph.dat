@@ -22,7 +22,7 @@
 "ShyGraphNode": {
 "data": {
 },
-"offset": Vector2( 518, 316 ),
+"offset": Vector2( 289.198, 291.8 ),
 "slots": [ {
 "active": true,
 "allign": 0,
@@ -45,7 +45,7 @@
 "ShyGraphNode9": {
 "data": {
 },
-"offset": Vector2( 304, 195 ),
+"offset": Vector2( 289.2, 37.1994 ),
 "slots": [ {
 "active": true,
 "allign": 0,
