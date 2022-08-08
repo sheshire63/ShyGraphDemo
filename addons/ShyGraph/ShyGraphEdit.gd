@@ -42,6 +42,7 @@ func _set_types(new) -> void:
 	types = new
 	update_nodes()
 export(line_types) var line_type := line_types.line
+export var line_width := 5.0
 
 var nodes := {}
 var connections := []
@@ -81,7 +82,7 @@ func _draw() -> void:
 	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
 	for i in connections:#todo move the get stuff to draw_link
 		var line_data = _create_line(i)
-		draw_polyline_colors(line_data.line, line_data.colors)
+		draw_polyline_colors(line_data.line, line_data.colors, line_width)
 	if create_connection_from:
 		var line_data = _create_line({
 			"from": create_connection_from,
