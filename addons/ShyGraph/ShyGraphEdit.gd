@@ -127,21 +127,22 @@ func _gui_input(event: InputEvent) -> void:
 				_end_select_drag()
 
 
-func _on_transform_changed() -> void:
-	update_nodes()
-
-
 func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
 	node.offset = position_to_offset(get_local_mouse_position())
 
 
+#node flow
+
+
 func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
+	area_rect = area_rect.expand(node.offset)
 	for i in selected_nodes:
 		if i == node:
 			continue
 		i.offset += amount
+		area_rect = area_rect.expand(i.offset)
 	update()
 
 
@@ -166,6 +167,19 @@ func _on_node_delete(node) -> void:
 
 func _on_node_request_deselect() -> void:
 	deselect()
+
+
+# overrides
+
+
+func _set_is_editor(new) -> void:
+	._set_is_editor(new)
+	if !new:
+		_load_nodes()
+
+
+func _on_transform_changed() -> void:
+	update_nodes()
 
 
 # global
@@ -303,15 +317,6 @@ func add_type(type := {}) -> void:
 	if !type:
 		type = new_type()
 	types.append(type)
-
-
-# overrides
-
-
-func _set_is_editor(new) -> void:
-	._set_is_editor(new)
-	if !new:
-		_load_nodes()
 
 
 # private

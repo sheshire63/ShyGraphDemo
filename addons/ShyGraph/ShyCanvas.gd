@@ -13,11 +13,11 @@ export var grid_step := 128
 
 var transform := Transform2D.IDENTITY setget _set_offset
 func _set_offset(new) -> void:
-	transform = new
+	transform =_limit_transform_to_rect(new)
 	_on_transform_changed()
 	update()
 	emit_signal("transform_changed")
-var offset_rect := get_rect() #todo
+var area_rect := get_rect() #todo
 var is_editor := true setget _set_is_editor
 func _set_is_editor(new) -> void:
 	is_editor = new
@@ -47,8 +47,16 @@ func _init(_is_editor := false) -> void: #is_editor = false if we want to use it
 	_check_is_editor(_is_editor)
 
 
+func _ready() -> void:
+	call_deferred("reset")
+
+
 func _draw() -> void:
 	_draw_grid()
+
+
+func _process(delta: float) -> void:
+	update()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -67,8 +75,19 @@ func _gui_input(event: InputEvent) -> void:
 
 func reset() -> void:
 	self.transform = Transform2D.IDENTITY
+	update_rect()
 	_reset()
 	update()
+
+
+func update_rect() -> void:
+	var rect = Rect2(offset_to_position(Vector2.ZERO), Vector2.ZERO)
+	for i in get_children():
+		if i is ShyGraphNode:
+			rect = rect.expand(i.rect_position)
+			rect = rect.expand(i.rect_position + i.rect_size)
+	area_rect = position_to_offset(rect)
+	self.transform = transform
 
 
 func move(amount: Vector2) -> void:
@@ -93,12 +112,12 @@ func scale_to(scale: float) -> void:
 	self.transform = transform
 
 
-func offset_to_position(offset: Vector2) -> Vector2:
-	return transform.affine_inverse().xform(offset)
+func offset_to_position(value):
+	return transform.affine_inverse().xform(value)
 
 
-func position_to_offset(position: Vector2) -> Vector2:
-	return transform.xform(position)
+func position_to_offset(value):
+	return transform.xform(value)
 
 
 # private
@@ -125,3 +144,19 @@ func _draw_grid() -> void:
 		var pos = offset_to_position(Vector2.ONE * y)
 		draw_line(Vector2(0, pos.y), Vector2(rect_size.x, pos.y), Color.gray)
 		y += grid_step
+
+
+func _limit_transform_to_rect(value: Transform2D) -> Transform2D:
+	var screen_size = position_to_offset(rect_size) * 0.5
+	value.origin = _get_nearest_point_in_rect(value.origin + screen_size, area_rect) - screen_size
+	return value
+
+
+func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
+	if rect.has_point(point):
+		return point
+	var center = rect.get_center()
+	var bounds = rect.size / 2
+	point.x = max(center.x - bounds.x, min(point.x, center.x + bounds.x))
+	point.y = max(center.y - bounds.y, min(point.y, center.y + bounds.y))
+	return point
