@@ -1,78 +1,14 @@
 {
-"connections": [ {
-"from": {
-"node": "ShyGraphNode",
-"slot": 0
-},
-"to": {
-"node": "ShyGraphNode3",
-"slot": 1
-}
-}, {
-"from": {
-"node": "ShyGraphNode3",
-"slot": 0
-},
-"to": {
-"node": "ShyGraphNode",
-"slot": 1
-}
-} ],
+"connections": [  ],
 "nodes": {
 "ShyGraphNode": {
 "data": {
 },
-"offset": Vector2( -363.783, -45.792 ),
+"offset": Vector2( 238.581, 131.165 ),
 "slots": [ {
-"active": true,
-"allign": 0,
-"anchor": "Button",
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": Vector2( 1, 1 ),
-"type": 0
-}, {
 "active": true,
 "allign": 1,
 "anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 1,
-"size": Vector2( 1, 1 ),
-"type": 1
-} ],
-"type": "ShyGraphNode"
-},
-"ShyGraphNode2": {
-"data": {
-},
-"offset": Vector2( -797.588, -235.692 ),
-"slots": [ {
-"active": true,
-"allign": 0,
-"anchor": "Button",
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": Vector2( 1, 1 ),
-"type": 0
-}, {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 1,
-"size": Vector2( 1, 1 ),
-"type": 1
-} ],
-"type": "ShyGraphNode"
-},
-"ShyGraphNode3": {
-"data": {
-},
-"offset": Vector2( -476.981, -287.592 ),
-"slots": [ {
-"active": true,
-"allign": 0,
-"anchor": "Button",
 "offset": Vector2( 0, 0 ),
 "side": 0,
 "size": Vector2( 1, 1 ),

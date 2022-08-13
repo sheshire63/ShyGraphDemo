@@ -12,28 +12,30 @@ script = ExtResource( 4 )
 
 [node name="ShyGraphEdit" parent="." instance=ExtResource( 2 )]
 types = [ {
-"color": Color( 1, 1, 1, 1 ),
+"color": Color( 0.431373, 0.705882, 0.180392, 1 ),
 "connections": [ [ 1.0 ], [  ], [  ], [  ] ],
 "multiple": true,
-"name": "Flow in",
+"name": "in",
 "size": Vector2( 8, 8 )
 }, {
-"color": Color( 0.509804, 0.0745098, 0.0745098, 1 ),
+"color": Color( 0.92549, 0.654902, 0.133333, 1 ),
 "connections": [ [  ], [ 0.0 ], [  ], [  ] ],
-"multiple": false,
-"name": "Flow out",
+"multiple": true,
+"name": "out",
 "size": Vector2( 8, 8 )
 } ]
 
 [node name="ShyGraphNode" type="Panel" parent="ShyGraphEdit"]
-margin_right = 64.0
-margin_bottom = 64.0
+margin_left = 256.0
+margin_top = 150.0
+margin_right = 320.0
+margin_bottom = 214.0
 rect_min_size = Vector2( 64, 64 )
 script = ExtResource( 1 )
 slots = [ {
 "active": true,
-"allign": 0,
-"anchor": "Button",
+"allign": 1,
+"anchor": "",
 "offset": Vector2( 0, 0 ),
 "side": 0,
 "size": Vector2( 1, 1 ),
@@ -47,16 +49,6 @@ slots = [ {
 "size": Vector2( 1, 1 ),
 "type": 1
 } ]
-
-[node name="Button" type="Button" parent="ShyGraphEdit/ShyGraphNode"]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -6.0
-margin_top = -10.0
-margin_right = 6.0
-margin_bottom = 10.0
 
 [node name="EditorTest2" type="Node" parent="."]
 script = ExtResource( 3 )
@@ -82,3 +74,5 @@ data = {
 "nodes": {
 }
 }
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="."]

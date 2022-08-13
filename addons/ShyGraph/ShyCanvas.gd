@@ -53,6 +53,8 @@ func _ready() -> void:
 
 func _draw() -> void:
 	_draw_grid()
+	draw_rect(offset_to_position(area_rect), Color.green, false, 5.0)
+	draw_circle(rect_size / 2, 5.0, Color.aquamarine)
 
 
 func _process(delta: float) -> void:
@@ -75,6 +77,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func reset() -> void:
 	self.transform = Transform2D.IDENTITY
+	area_rect = get_rect()
 	update_rect()
 	_reset()
 	update()
@@ -82,12 +85,6 @@ func reset() -> void:
 
 func update_rect() -> void:
 	var rect = Rect2(offset_to_position(Vector2.ZERO), Vector2.ZERO)
-	for i in get_children():
-		if i is ShyGraphNode:
-			rect = rect.expand(i.rect_position)
-			rect = rect.expand(i.rect_position + i.rect_size)
-	area_rect = position_to_offset(rect)
-	self.transform = transform
 
 
 func move(amount: Vector2) -> void:
@@ -146,17 +143,15 @@ func _draw_grid() -> void:
 		y += grid_step
 
 
-func _limit_transform_to_rect(value: Transform2D) -> Transform2D:
-	var screen_size = position_to_offset(rect_size) * 0.5
-	value.origin = _get_nearest_point_in_rect(value.origin + screen_size, area_rect) - screen_size
+func _limit_transform_to_rect(value: Transform2D) -> Transform2D:#todo its offcenter
+	var offset = rect_size / 2 * transform.get_scale()
+	value.origin = _get_nearest_point_in_rect(value.origin + offset, area_rect) - offset
 	return value
 
 
 func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
 	if rect.has_point(point):
 		return point
-	var center = rect.get_center()
-	var bounds = rect.size / 2
-	point.x = max(center.x - bounds.x, min(point.x, center.x + bounds.x))
-	point.y = max(center.y - bounds.y, min(point.y, center.y + bounds.y))
+	point.x = max(rect.position.x, min(point.x, rect.end.x))
+	point.y = max(rect.position.y, min(point.y, rect.end.y))
 	return point

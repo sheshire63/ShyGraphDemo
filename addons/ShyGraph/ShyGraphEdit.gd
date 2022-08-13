@@ -138,11 +138,13 @@ func _on_Nodes_id_pressed(id:int) -> void:
 
 func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
 	area_rect = area_rect.expand(node.offset)
+	area_rect = area_rect.expand(node.offset + node.rect_size)
 	for i in selected_nodes:
 		if i == node:
 			continue
 		i.offset += amount
 		area_rect = area_rect.expand(i.offset)
+		area_rect = area_rect.expand(i.offset + i.rect_size)
 	update()
 
 
@@ -200,6 +202,16 @@ func deselect() -> void:
 	selected_nodes = []
 
 
+func update_rect() -> void:
+	var rect = Rect2(offset_to_position(Vector2.ZERO), Vector2.ZERO)
+	for i in get_children():
+		if i is ShyGraphNode:
+			rect = rect.expand(i.rect_position)
+			rect = rect.expand(i.rect_position + i.rect_size)
+	area_rect = position_to_offset(rect)
+	self.transform = transform
+
+
 func select(node: ShyGraphNode) -> void:
 	if node in selected_nodes:
 		return
@@ -236,8 +248,11 @@ func load_data(data: Dictionary) -> void:
 		connections = data.connections
 		for i in data.nodes:
 			var node_data = data.nodes[i]
-			var node = _create_node_instance(nodes[node_data.type], node_data)
-			node.name = i
+			if node_data.type in nodes:
+				var node = _create_node_instance(nodes[node_data.type], node_data)
+				node.name = i
+			else:
+				printerr("node type not found: %s"%(node_data.type))
 		
 
 func add_connection(from: Dictionary, to: Dictionary) -> void:
@@ -325,6 +340,10 @@ func add_type(type := {}) -> void:
 func _create_line(connection: Dictionary) -> Dictionary:
 	var from: Dictionary = connection.from
 	var to: Dictionary = connection.to
+	if !has_node(from.node):
+		printerr("node not found: %s"%(from.node))
+		remove_connection(connection)
+		return {"line": [], "colors": []}
 	var from_node = get_node(from.node)
 	var from_pos = from_node.get_slot_offset(from.slot)
 	var from_slot = get_slot(from.node, from.slot)
