@@ -109,12 +109,18 @@ func scale_to(scale: float) -> void:
 	self.transform = transform
 
 
-func offset_to_position(value):
-	return transform.affine_inverse().xform(value)
+func offset_to_position(value, translate := true):
+	if translate:
+		return transform.affine_inverse().xform(value)
+	else:
+		return transform.affine_inverse().basis_xform(value)
 
 
-func position_to_offset(value):
-	return transform.xform(value)
+func position_to_offset(value, translate := true):
+	if translate:
+		return transform.xform(value)
+	else:
+		return transform.basis_xform(value)
 
 
 # private
@@ -144,7 +150,7 @@ func _draw_grid() -> void:
 
 
 func _limit_transform_to_rect(value: Transform2D) -> Transform2D:#todo its offcenter
-	var offset = rect_size / 2 * transform.get_scale()
+	var offset = position_to_offset(rect_size / 2, false)
 	value.origin = _get_nearest_point_in_rect(value.origin + offset, area_rect) - offset
 	return value
 
