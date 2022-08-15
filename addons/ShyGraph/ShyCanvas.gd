@@ -10,6 +10,9 @@ signal transform_changed
 
 
 export var grid_step := 128
+export var grid_substeps := 1
+export var ruler := true
+export(float, 1, 64, 1) var ruler_width := 16.0
 
 var transform := Transform2D.IDENTITY setget _set_offset
 func _set_offset(new) -> void:
@@ -52,9 +55,10 @@ func _ready() -> void:
 
 
 func _draw() -> void:
+	draw_style_box(get_stylebox("bg", "GraphEdit"), Rect2(Vector2.ZERO, rect_size))
 	_draw_grid()
-	draw_rect(offset_to_position(area_rect), Color.green, false, 5.0)
-	draw_circle(rect_size / 2, 5.0, Color.aquamarine)
+	if ruler:
+		_draw_ruler()
 
 
 func _process(delta: float) -> void:
@@ -135,18 +139,54 @@ func _check_is_editor(_is_editor: bool) -> void:
 
 func _draw_grid() -> void:
 	var from = position_to_offset(Vector2.ZERO)
+	if ruler:
+		from += Vector2.ONE
 	var to = position_to_offset(rect_size)
-	var x = stepify(from.x, grid_step)
-	var test = Vector2(128, 128)
+	var x = stepify(from.x, grid_step / grid_substeps)
+	var offset: float = ruler_width if ruler else 0.0
 	while x < to.x:
 		var pos = offset_to_position(Vector2.ONE * x)
-		draw_line(Vector2(pos.x, 0), Vector2(pos.x, rect_size.y), Color.gray)
-		x += grid_step
-	var y = stepify(from.y, grid_step)
+		if int(x) % grid_step == 0:
+			draw_line(Vector2(pos.x, offset), Vector2(pos.x, rect_size.y), get_color("grid_major", "GraphEdit"), 2)
+		else:
+			draw_line(Vector2(pos.x, offset), Vector2(pos.x, rect_size.y), get_color("grid_minor", "GraphEdit"))
+		x += grid_step / (grid_substeps + 1)
+	var y = stepify(from.y, grid_step / grid_substeps)
 	while y < to.y:
 		var pos = offset_to_position(Vector2.ONE * y)
-		draw_line(Vector2(0, pos.y), Vector2(rect_size.x, pos.y), Color.gray)
-		y += grid_step
+		if int(y) % grid_step == 0:
+			draw_line(Vector2(offset, pos.y), Vector2(rect_size.x, pos.y), get_color("grid_major", "GraphEdit"), 2)
+		else:
+			draw_line(Vector2(offset, pos.y), Vector2(rect_size.x, pos.y), get_color("grid_minor", "GraphEdit"))
+		y += grid_step / (grid_substeps + 1)
+
+
+
+func _draw_ruler() -> void:
+	var from = position_to_offset(Vector2.ZERO)
+	var to = position_to_offset(rect_size)
+	var x = stepify(from.x + position_to_offset(ruler_width * Vector2.ONE, false).x, grid_step / grid_substeps)
+	while x < to.x:
+		var pos = offset_to_position(Vector2.ONE * x)
+		if int(x) % grid_step == 0:
+			draw_string(get_font("font", ""), Vector2(pos.x, ruler_width), str(x), Color.white)
+		draw_line(Vector2(pos.x, 0), Vector2(pos.x, ruler_width), Color.white)
+		x += grid_step / (grid_substeps + 1)
+	
+	var tf = Transform2D.IDENTITY.rotated(-PI / 2)
+	tf = tf.translated(Vector2(-ruler_width, 0))
+	tf = tf.scaled(Vector2(-1, 1))
+	draw_set_transform(Vector2.ZERO, tf.get_rotation(), Vector2.ONE)
+	var y = stepify(from.y, grid_step / grid_substeps)
+	while y < to.y:
+		var pos = offset_to_position(Vector2.ONE * y)
+		if int(y) % grid_step == 0:
+			draw_string(get_font("font", ""), tf.xform(Vector2(0 , pos.y)), str(y), Color.white)
+		draw_line(tf.xform(Vector2(0, pos.y)), tf.xform(Vector2(ruler_width, pos.y)), Color.white)
+		y += grid_step / (grid_substeps + 1)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	draw_rect(Rect2(Vector2.ZERO, Vector2.ONE * ruler_width), get_color("bg", "ShyGraphEdit") if has_color("bg", "ShyGraphEdit") else Color.gray)
+
 
 
 func _limit_transform_to_rect(value: Transform2D) -> Transform2D:#todo its offcenter

@@ -1,5 +1,5 @@
 tool
-extends Panel
+extends Control
 
 class_name ShyGraphNode
 
@@ -30,8 +30,6 @@ func _set_slots(new) -> void:
 var slot_controls := {}
 var type: String
 var selected := false setget _set_selected
-var default_theme: Theme
-export var select_theme: Theme
 
 
 #virtual----------------------------------------------------
@@ -77,9 +75,20 @@ func _init() -> void:
 	
 
 func _ready() -> void:
-	default_theme = theme
 	move(Vector2.ZERO)
 
+
+func _draw() -> void:
+	if selected:
+		if has_stylebox("selected", "ShyGraphNode"):
+			draw_style_box(get_stylebox("selected", "ShyGraphNode") , Rect2(Vector2.ZERO, rect_size))
+		else:
+			modulate = Color(1.1, 1.1, 1.1, 1)
+	else:
+		if has_stylebox("selected", "ShyGraphNode"):
+			draw_style_box(get_stylebox("default", "ShyGraphNode"), Rect2(Vector2.ZERO, rect_size))
+		else:
+			modulate = Color.white
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -246,16 +255,17 @@ func get_slot(id: int) -> Dictionary:
 
 func _set_selected(new: bool) -> void:
 	selected = new
-	if selected:
-		if select_theme:
-			theme = select_theme
-		else:
-			modulate  = Color(1.1, 1.1, 1.1)
-	else:
-		if select_theme:
-			theme = default_theme
-		else:
-			modulate = Color(1, 1, 1)
+	update()
+	# if selected:
+	# 	if select_theme:
+	# 		theme = select_theme
+	# 	else:
+	# 		modulate  = Color(1.1, 1.1, 1.1)
+	# else:
+	# 	if select_theme:
+	# 		theme = default_theme
+	# 	else:
+	# 		modulate = Color(1, 1, 1)
 
 
 func _get_slot_offset(slot: Dictionary) -> Vector2:

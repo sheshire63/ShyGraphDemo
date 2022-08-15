@@ -4,7 +4,53 @@
 "ShyGraphNode": {
 "data": {
 },
-"offset": Vector2( 238.581, 131.165 ),
+"offset": Vector2( -174.249, 12.0249 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode2": {
+"data": {
+},
+"offset": Vector2( 192.251, 38.5148 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode3": {
+"data": {
+},
+"offset": Vector2( 238.231, 198.235 ),
 "slots": [ {
 "active": true,
 "allign": 1,

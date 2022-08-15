@@ -26,10 +26,8 @@ types = [ {
 } ]
 
 [node name="ShyGraphNode" type="Panel" parent="ShyGraphEdit"]
-margin_left = 256.0
-margin_top = 150.0
-margin_right = 320.0
-margin_bottom = 214.0
+margin_right = 64.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 64, 64 )
 script = ExtResource( 1 )
 slots = [ {
@@ -53,16 +51,7 @@ slots = [ {
 [node name="EditorTest2" type="Node" parent="."]
 script = ExtResource( 3 )
 data = {
-"connections": [ {
-"from": {
-"node": "ShyGraphNode",
-"slot": 1
-},
-"to": {
-"node": "ShyGraphNode2",
-"slot": 0
-}
-} ],
+"connections": [  ],
 "nodes": {
 }
 }
@@ -74,5 +63,3 @@ data = {
 "nodes": {
 }
 }
-
-[node name="AnimatedSprite" type="AnimatedSprite" parent="."]

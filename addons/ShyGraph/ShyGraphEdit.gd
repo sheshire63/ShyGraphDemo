@@ -90,7 +90,8 @@ func _draw() -> void:
 	if break_from:
 		draw_line(break_from, position_to_offset(get_local_mouse_position()), Color.red)
 	if select_from:
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), Color(0.5, 0.5, 0.5, 0.5))
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), get_color("selection_fill", "ShyGraphEdit"))
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), get_color("selection_stroke", "ShyGraphEdit"), false)
 
 
 func _input(event: InputEvent) -> void:
@@ -371,8 +372,9 @@ func _create_line(connection: Dictionary) -> Dictionary:
 
 		line_types.bezier:
 			var curve = Curve2D.new()
-			curve.add_point(from_pos, from_side * 128, from_side * 128)
-			curve.add_point(to_pos, to_side * 128, to_side * 128)
+			var weight = get_constant("bezier_len_pos", "GraphEdit")
+			curve.add_point(from_pos, from_side * weight, from_side * weight)
+			curve.add_point(to_pos, to_side * weight, to_side * weight)
 			line = curve.get_baked_points()
 			var gradient = Gradient.new()
 			gradient.colors = [from_color, to_color]

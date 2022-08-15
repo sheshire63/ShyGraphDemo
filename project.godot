@@ -29,7 +29,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/ShyGraph/ShyGraphEdit.gd"
 }, {
-"base": "Panel",
+"base": "Control",
 "class": "ShyGraphNode",
 "language": "GDScript",
 "path": "res://addons/ShyGraph/ShyGraphNode.gd"
