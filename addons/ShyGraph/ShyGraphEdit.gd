@@ -72,9 +72,11 @@ func _get_property_list() -> Array:
 
 
 func _ready() -> void:
-	if is_editor:
+	if Engine.editor_hint:
 		return
 	_load_nodes()
+	connect("transform_changed", self, "_on_transform_changed")
+	
 
 
 func _process(delta: float) -> void:
@@ -95,7 +97,7 @@ func _draw() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if is_editor:
+	if Engine.editor_hint:
 		return
 	if event is InputEventKey:
 		match event.scancode:
@@ -107,7 +109,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if is_editor:
+	if Engine.editor_hint:
 		return
 	if event is InputEventMouseButton:
 		if event.is_pressed():

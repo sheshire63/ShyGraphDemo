@@ -27,7 +27,7 @@ func _ready() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if edit.is_editor:
+	if Engine.editor_hint:
 		return
 	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
 		var slot_data = {

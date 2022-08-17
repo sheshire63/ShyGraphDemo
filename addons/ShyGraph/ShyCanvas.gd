@@ -5,53 +5,60 @@ extends Control
 class_name ShyCanvas
 
 
-signal saved(_data)
+signal save_request(data)
+signal saved
 signal transform_changed
+signal offset_changed
+signal scale_changed
+signal area_rect_changed
 
 
-export var grid_step := 128
-export var grid_substeps := 1
 export var ruler := true
-export(float, 1, 64, 1) var ruler_width := 16.0
+export var scroll_bar := true setget _set_scroll_bar; func _set_scroll_bar(new):
+		if scroll_bar != new:
+			scroll_bar = new
+			if new:
+				_add_scrooll_bar()
+			else:
+				_remove_scroll_bar()
 
-var transform := Transform2D.IDENTITY setget _set_offset
-func _set_offset(new) -> void:
-	transform =_limit_transform_to_rect(new)
-	_on_transform_changed()
-	update()
-	emit_signal("transform_changed")
-var area_rect := get_rect() #todo
-var is_editor := true setget _set_is_editor
-func _set_is_editor(new) -> void:
-	is_editor = new
+var transform := Transform2D.IDENTITY setget _set_offset; func _set_offset(new) -> void:
+		new =_limit_transform_to_rect(new)
+		transform = new
+		emit_signal("transform_changed")
+		update()
+var area_rect := get_rect() setget _set_area_rect; func _set_area_rect(new) -> void:
+		if new != area_rect:
+			area_rect = new
+			emit_signal("area_rect_changed")
+var bar_h: ScrollBar
+var bar_v: ScrollBar
+
+# theme settings
+var grid_step := 128
+var grid_substeps := 1
+var max_scale := 10.0
+var grid_major_line_width := 2.0
+var grid_minor_line_width := 1.0
+var grid_major_line_color := Color.gray
+var grid_minor_line_color := Color.darkgray
+var min_scale := 0.1
+var ruler_width := 16.0
+var ruler_font: Font
+var ruler_font_color := Color.white
+var ruler_line_color := Color.white
+var ruler_line_width := 1
+var ruler_step := 128
 
 
-# virtual
-
-
-func _select_area(_area: Rect2) -> void:
-	pass
-
-
-func _reset() -> void:
-	pass
-
-
-func _update() -> void:
-	pass
-
-func _on_transform_changed() -> void:
-	pass
 
 # flow
 
-
-func _init(_is_editor := false) -> void: #is_editor = false if we want to use it in the editor
-	_check_is_editor(_is_editor)
-
-
 func _ready() -> void:
+	_update_theme()
 	call_deferred("reset")
+	if scroll_bar:
+		_add_scrooll_bar()
 
 
 func _draw() -> void:
@@ -59,10 +66,6 @@ func _draw() -> void:
 	_draw_grid()
 	if ruler:
 		_draw_ruler()
-
-
-func _process(delta: float) -> void:
-	update()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -76,19 +79,13 @@ func _gui_input(event: InputEvent) -> void:
 		if Input.is_mouse_button_pressed(BUTTON_MIDDLE):
 			move(-event.relative)
 
-
 # puplic
 
 func reset() -> void:
 	self.transform = Transform2D.IDENTITY
-	area_rect = get_rect()
-	update_rect()
+	self.area_rect = get_rect()
 	_reset()
 	update()
-
-
-func update_rect() -> void:
-	var rect = Rect2(offset_to_position(Vector2.ZERO), Vector2.ZERO)
 
 
 func move(amount: Vector2) -> void:
@@ -104,6 +101,7 @@ func scale(amount: float) -> void:
 
 
 func scale_to(scale: float) -> void:
+	scale = max(min_scale, min(scale, max_scale))
 	var mouse_from = position_to_offset(get_local_mouse_position())
 	var new = Transform2D.IDENTITY.scaled(Vector2.ONE * scale)
 	new.origin = transform.origin
@@ -114,6 +112,8 @@ func scale_to(scale: float) -> void:
 
 
 func offset_to_position(value, translate := true):
+	if value is int or value is float:
+		return value / transform.get_scale().x
 	if translate:
 		return transform.affine_inverse().xform(value)
 	else:
@@ -121,81 +121,149 @@ func offset_to_position(value, translate := true):
 
 
 func position_to_offset(value, translate := true):
+	if value is float or value is int:
+		return value * transform.get_scale().x
 	if translate:
 		return transform.xform(value)
 	else:
 		return transform.basis_xform(value)
 
+# virtual
+
+func _select_area(_area: Rect2) -> void:
+	pass
+
+
+func _reset() -> void:
+	pass
+
+
+func _update() -> void:
+	pass
+
+
+func _on_transform_changed() -> void:
+	pass
+
+#set
+
+func set_theme(new) -> void:
+	theme = new
+	_update_theme()
+
+
+
+# events
+
+func _on_bar_v_changed(new) -> void:
+	self.transform.origin.y = new
+	# self.transform = transform
 
 # private
 
-
-func _check_is_editor(_is_editor: bool) -> void:
-	if Engine.editor_hint:
-		is_editor = _is_editor
-	else:
-		is_editor = false
-
-
 func _draw_grid() -> void:
-	var from = position_to_offset(Vector2.ZERO)
-	if ruler:
-		from += Vector2.ONE
-	var to = position_to_offset(rect_size)
-	var x = stepify(from.x, grid_step / grid_substeps)
 	var offset: float = ruler_width if ruler else 0.0
-	while x < to.x:
-		var pos = offset_to_position(Vector2.ONE * x)
-		if int(x) % grid_step == 0:
-			draw_line(Vector2(pos.x, offset), Vector2(pos.x, rect_size.y), get_color("grid_major", "GraphEdit"), 2)
-		else:
-			draw_line(Vector2(pos.x, offset), Vector2(pos.x, rect_size.y), get_color("grid_minor", "GraphEdit"))
-		x += grid_step / (grid_substeps + 1)
-	var y = stepify(from.y, grid_step / grid_substeps)
-	while y < to.y:
-		var pos = offset_to_position(Vector2.ONE * y)
-		if int(y) % grid_step == 0:
-			draw_line(Vector2(offset, pos.y), Vector2(rect_size.x, pos.y), get_color("grid_major", "GraphEdit"), 2)
-		else:
-			draw_line(Vector2(offset, pos.y), Vector2(rect_size.x, pos.y), get_color("grid_minor", "GraphEdit"))
-		y += grid_step / (grid_substeps + 1)
-
+	var from: Vector2 = position_to_offset(offset * Vector2.ONE)
+	var to: Vector2 = position_to_offset(rect_size)
+	var step = (grid_step / (grid_substeps + 1)) * Vector2.ONE
+	var pos: Vector2 = from.snapped(step)
+	draw_set_transform_matrix(transform.affine_inverse())
+	while pos.x <= to.x or pos.y <= to.y:
+		if pos.x >= from.x and pos.x <= to.x:
+			var line_width := grid_minor_line_width
+			var color := grid_minor_line_color
+			if int(pos.x) % grid_step == 0:
+				line_width = grid_major_line_width
+				color = grid_major_line_color
+			draw_line(Vector2(pos.x, from.y), Vector2(pos.x, to.y), color, position_to_offset(line_width))
+		if pos.y >= from.y and pos.y <= to.y:
+			var line_width := grid_minor_line_width
+			var color := grid_minor_line_color
+			if int(pos.y) % grid_step == 0:
+				line_width = grid_major_line_width
+				color = grid_major_line_color
+			draw_line(Vector2(from.x, pos.y), Vector2(to.x, pos.y), color, position_to_offset(line_width))
+		pos += step
+	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 func _draw_ruler() -> void:
-	var from = position_to_offset(Vector2.ZERO)
-	var to = position_to_offset(rect_size)
-	var x = stepify(from.x + position_to_offset(ruler_width * Vector2.ONE, false).x, grid_step / grid_substeps)
-	while x < to.x:
-		var pos = offset_to_position(Vector2.ONE * x)
-		if int(x) % grid_step == 0:
-			draw_string(get_font("font", ""), Vector2(pos.x, ruler_width), str(x), Color.white)
-		draw_line(Vector2(pos.x, 0), Vector2(pos.x, ruler_width), Color.white)
-		x += grid_step / (grid_substeps + 1)
-	
-	var tf = Transform2D.IDENTITY.rotated(-PI / 2)
-	tf = tf.translated(Vector2(-ruler_width, 0))
-	tf = tf.scaled(Vector2(-1, 1))
-	draw_set_transform(Vector2.ZERO, tf.get_rotation(), Vector2.ONE)
-	var y = stepify(from.y, grid_step / grid_substeps)
-	while y < to.y:
-		var pos = offset_to_position(Vector2.ONE * y)
-		if int(y) % grid_step == 0:
-			draw_string(get_font("font", ""), tf.xform(Vector2(0 , pos.y)), str(y), Color.white)
-		draw_line(tf.xform(Vector2(0, pos.y)), tf.xform(Vector2(ruler_width, pos.y)), Color.white)
-		y += grid_step / (grid_substeps + 1)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	draw_rect(Rect2(Vector2.ZERO, Vector2.ONE * ruler_width), get_color("bg", "ShyGraphEdit") if has_color("bg", "ShyGraphEdit") else Color.gray)
+	var from: Vector2 = position_to_offset(Vector2.ONE * ruler_width)
+	var to: Vector2 = position_to_offset(rect_size)
+	var step = grid_step / (grid_substeps + 1) * Vector2.ONE
+	var pos: Vector2 = from.snapped(step)
+	while pos.x <= to.x:
+		if pos.x > from.x:
+			var point = offset_to_position(pos)
+			if int(pos.x) % grid_step == 0:
+				draw_string(ruler_font, Vector2(point.x, ruler_width), str(int(pos.x)), ruler_font_color)
+			draw_line(Vector2(point.x, 0), Vector2(point.x, ruler_width), ruler_line_color, ruler_line_width)
+		pos.x += step.x
+	draw_line(Vector2.ONE * ruler_width, Vector2(rect_size.x, ruler_width), ruler_line_color, 2.0)
+	var tf = Transform2D(PI/2, Vector2.ZERO)
+	draw_set_transform_matrix(tf.affine_inverse())
+	while pos.y <= to.y:
+		if pos.y > from.y:
+			var point = offset_to_position(pos)
+			if int(pos.y) % grid_step == 0:
+				draw_string(ruler_font, tf.xform(Vector2(ruler_width, point.y)), str(int(pos.y)), ruler_font_color)
+			draw_line(tf.xform(Vector2(0, point.y)), tf.xform(Vector2(ruler_width, point.y)), ruler_line_color, ruler_line_width)
+		pos.y += step.y
+	draw_set_transform_matrix(Transform2D.IDENTITY)
+	draw_line(Vector2.ONE * ruler_width, Vector2(ruler_width, rect_size.y), ruler_line_color, 2.0)
 
 
+func _update_theme() -> void:
+	if has_constant("grid_step", ""):
+		grid_step = get_constant("grid_step", "")
+	if has_constant("grid_substeps", ""):
+		grid_substeps = get_constant("grid_substeps", "")
+	if has_constant("min_scale", ""):
+		min_scale = get_constant("min_scale", "")
+	if has_constant("max_scale", ""):
+		max_scale = get_constant("max_scale", "")
+	if has_constant("ruler_widht", ""):
+		ruler_width = get_constant("ruler_width", "")
+	ruler_font = get_font("ruler_font", "")
+	if has_constant("ruler_line_width", ""):
+		ruler_line_width = get_constant("ruler_line_width", "")
+	if has_color("ruler_font_color", ""):
+		ruler_font_color = get_color("ruler_font_color", "")
+	if has_color("ruler_line_color", ""):
+		ruler_line_color = get_color("ruler_line_color", "")
+	if has_constant("grid_major_line_width", ""):
+		grid_major_line_width = get_constant("grid_major_line_width", "")
+	if has_constant("grid_minor_line_width", ""):
+		grid_minor_line_width = get_constant("grid_minor_line_width", "")
+	if has_color("grid_major_line_color", ""):
+		grid_major_line_color = get_color("grid_major_line_color", "")
+	if has_color("grid_minor_line_color", ""):
+		grid_minor_line_color = get_color("grid_minor_line_color", "")
 
-func _limit_transform_to_rect(value: Transform2D) -> Transform2D:#todo its offcenter
+
+func _add_scrooll_bar() -> void:
+	bar_v = VScrollBar.new()
+	bar_v.set_anchors_and_margins_preset(Control.PRESET_RIGHT_WIDE)
+	bar_v.connect("value_changed", self, "_on_bar_v_changed")
+	add_child(bar_v)
+
+
+func _remove_scroll_bar() -> void:
+	if is_instance_valid(bar_v):
+		bar_v.queue_free()
+	bar_v = null
+	if is_instance_valid(bar_h):
+		bar_h.queue_free()
+	bar_h = null
+
+
+func _limit_transform_to_rect(old: Transform2D) -> Transform2D:
 	var offset = position_to_offset(rect_size / 2, false)
-	value.origin = _get_nearest_point_in_rect(value.origin + offset, area_rect) - offset
-	return value
+	old.origin = _get_nearest_point_in_rect(old.origin + offset, area_rect) - offset
+	return old
 
 
-func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
+static func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
 	if rect.has_point(point):
 		return point
 	point.x = max(rect.position.x, min(point.x, rect.end.x))
