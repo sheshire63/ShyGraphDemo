@@ -29,20 +29,13 @@ signal node_deselected (node)
 onready var node_menu := $Nodes
 
 export(String, DIR) var node_folder := ""
-var types := [] setget _set_types
-#	"name": "",
-#	"color": Color.white,
-#   "connections": [], #sides disabled flag #omit this we just need to not set it to the wrong sides in the node
-#	do we need to store the allowed sided from side(maybe even per connection)
-# }
-func _set_types(new) -> void:
-	for i in new.size():
-		if !new[i]:
-			new[i] = new_type()
-	types = new
-	update_nodes()
+var types := [] setget _set_types; func _set_types(new) -> void:
+		for i in new.size():
+			if !new[i]:
+				new[i] = new_type()
+		types = new
+		update_nodes()
 export(line_types) var line_type := line_types.line
-export var line_width := 5.0
 
 var nodes := {}
 var connections := []
@@ -52,6 +45,13 @@ var break_from: Vector2
 var selected_nodes := []
 var select_from : Vector2
 
+#theme
+var break_line_color := Color.red
+var break_line_width := 1
+var line_width := 5
+var selection_fill_color := Color(0.5, 0.5, 0.5, 0.5)
+var selection_stroke_color := Color.gray
+var selection_stroke_width := 1.0
 
 
 func _get_property_list() -> Array:
@@ -76,7 +76,6 @@ func _ready() -> void:
 		return
 	_load_nodes()
 	connect("transform_changed", self, "_on_transform_changed")
-	
 
 
 func _process(delta: float) -> void:
@@ -90,10 +89,10 @@ func _draw() -> void:
 	_draw_connections()
 	_draw_create_connection()
 	if break_from:
-		draw_line(break_from, position_to_offset(get_local_mouse_position()), Color.red)
+		draw_line(break_from, position_to_offset(get_local_mouse_position()), break_line_color, break_line_width)
 	if select_from:
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), get_color("selection_fill", "ShyGraphEdit"))
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), get_color("selection_stroke", "ShyGraphEdit"), false)
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_fill_color)
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_stroke_color, false, selection_stroke_width)
 
 
 func _input(event: InputEvent) -> void:
@@ -134,7 +133,7 @@ func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
 	node.offset = position_to_offset(get_local_mouse_position())
-
+	emit_signal("node_added", node)
 
 #node flow
 
@@ -149,16 +148,19 @@ func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
 		area_rect = area_rect.expand(i.offset)
 		area_rect = area_rect.expand(i.offset + i.rect_size)
 	update()
+	emit_signal("node_moved", node)
 
 
 func _on_node_selected(multiple: bool, node: ShyGraphNode) -> void:
 	if !multiple:
 		deselect()
 	selected_nodes.append(node)
+	emit_signal("node_selected", node)
 
 
 func _on_node_deselected(node: ShyGraphNode) -> void:
 	selected_nodes.erase(node)
+	emit_signal("node_deselected", node)
 
 
 func _on_node_delete(node) -> void:
@@ -168,6 +170,7 @@ func _on_node_delete(node) -> void:
 			to_remove.append(i)
 	for i in to_remove:
 		remove_connection(i)
+	emit_signal("node_removed", node)
 
 
 func _on_node_request_deselect() -> void:
@@ -197,11 +200,13 @@ func clear() -> void:
 		if i is ShyGraphNode:
 			i.queue_free()
 	reset()
+	emit_signal("cleared")
 
 
 func deselect() -> void:
 	for i in selected_nodes:
 		i.selected = false
+		_on_node_deselected(i)
 	selected_nodes = []
 
 
@@ -422,6 +427,7 @@ func _load_nodes() -> void:
 			node_menu.add_item(node.name)
 			nodes[node.name] = node
 			remove_child(node)
+	emit_signal("nodes_loaded")
 
 
 func _start_drag(from: Dictionary) -> void:
@@ -501,3 +507,19 @@ func _disconnect_slot(node: String, slot: int) -> void:
 			remove_connection(connection)
 		elif connection.to.node == node and connection.to.slot == slot:
 			remove_connection(connection)
+
+
+func _update_theme() -> void:
+	._update_theme()
+	if has_color("break_line_color", ""):
+		break_line_color = get_color("break_line_color", "")
+	if has_constant("break_line_width", ""):
+		break_line_width = get_constant("break_line_width", "")
+	if has_constant("line_width", ""):
+		line_width = get_constant("line_width", "")
+	if has_color("selection_fill_color", ""):
+		selection_fill_color = get_color("selection_fill_color", "")
+	if has_color("selection_stroke_color", ""):
+		selection_stroke_color = get_color("selection_stroke_color", "")
+	if has_constant("selection_stroke_width", ""):
+		selection_stroke_width = get_constant("selection_stroke_width", "")

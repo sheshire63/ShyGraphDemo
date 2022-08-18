@@ -37,13 +37,13 @@ var bar_v: ScrollBar
 # theme settings
 var grid_step := 128
 var grid_substeps := 1
-var max_scale := 10.0
-var grid_major_line_width := 2.0
-var grid_minor_line_width := 1.0
+var max_scale := 1000
+var min_scale := 10# in procent
+var grid_major_line_width := 2
+var grid_minor_line_width := 1
 var grid_major_line_color := Color.gray
 var grid_minor_line_color := Color.darkgray
-var min_scale := 0.1
-var ruler_width := 16.0
+var ruler_width := 16
 var ruler_font: Font
 var ruler_font_color := Color.white
 var ruler_line_color := Color.white
@@ -101,7 +101,7 @@ func scale(amount: float) -> void:
 
 
 func scale_to(scale: float) -> void:
-	scale = max(min_scale, min(scale, max_scale))
+	scale = max(min_scale / 100.0, min(scale, max_scale / 100.0))
 	var mouse_from = position_to_offset(get_local_mouse_position())
 	var new = Transform2D.IDENTITY.scaled(Vector2.ONE * scale)
 	new.origin = transform.origin
