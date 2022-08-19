@@ -18,18 +18,21 @@ export var scroll_bar := true setget _set_scroll_bar; func _set_scroll_bar(new):
 		if scroll_bar != new:
 			scroll_bar = new
 			if new:
-				_add_scrooll_bar()
+				_add_scrooll_bars()
 			else:
 				_remove_scroll_bar()
 
 var transform := Transform2D.IDENTITY setget _set_offset; func _set_offset(new) -> void:
 		new =_limit_transform_to_rect(new)
 		transform = new
+		_update_bar_pos()
 		emit_signal("transform_changed")
 		update()
-var area_rect := get_rect() setget _set_area_rect; func _set_area_rect(new) -> void:
+var area_rect := Rect2() setget _set_area_rect; func _set_area_rect(new) -> void:
 		if new != area_rect:
 			area_rect = new
+			_update_bars()
+			_update_bar_pos()
 			emit_signal("area_rect_changed")
 var bar_h: ScrollBar
 var bar_v: ScrollBar
@@ -56,9 +59,9 @@ var ruler_step := 128
 
 func _ready() -> void:
 	_update_theme()
-	call_deferred("reset")
 	if scroll_bar:
-		_add_scrooll_bar()
+		_add_scrooll_bars()
+	
 
 
 func _draw() -> void:
@@ -66,6 +69,8 @@ func _draw() -> void:
 	_draw_grid()
 	if ruler:
 		_draw_ruler()
+	draw_set_transform_matrix(transform.affine_inverse())
+	draw_rect(area_rect, Color.green, false)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -83,9 +88,20 @@ func _gui_input(event: InputEvent) -> void:
 
 func reset() -> void:
 	self.transform = Transform2D.IDENTITY
-	self.area_rect = get_rect()
+	_reset_area()
 	_reset()
 	update()
+
+
+
+func _reset_area() -> void:
+	var rect = get_rect()
+	for i in get_children():
+		if i is ShyGraphNode:
+			rect.expand(i.offset)
+			rect.expand(i.offset + i.rect_size)
+	self.area_rect = rect
+
 
 
 func move(amount: Vector2) -> void:
@@ -157,9 +173,30 @@ func set_theme(new) -> void:
 
 func _on_bar_v_changed(new) -> void:
 	self.transform.origin.y = new
-	# self.transform = transform
+
+
+func _on_bar_h_changed(new) -> void:
+	self.transform.origin.x = new
+
 
 # private
+
+func _update_bars() -> void:
+	var offset = position_to_offset(rect_size, false) / 2
+	if bar_v:
+		bar_v.min_value = area_rect.position.y - offset.y
+		bar_v.max_value = area_rect.end.y - offset.y
+	if bar_h:
+		bar_h.min_value = area_rect.position.x - offset.x
+		bar_h.max_value = area_rect.end.x - offset.x
+
+
+func _update_bar_pos() -> void:
+	if bar_v:
+		bar_v.value = transform.origin.y
+	if bar_h:
+		bar_h.value = transform.origin.x
+
 
 func _draw_grid() -> void:
 	var offset: float = ruler_width if ruler else 0.0
@@ -241,13 +278,6 @@ func _update_theme() -> void:
 		grid_minor_line_color = get_color("grid_minor_line_color", "")
 
 
-func _add_scrooll_bar() -> void:
-	bar_v = VScrollBar.new()
-	bar_v.set_anchors_and_margins_preset(Control.PRESET_RIGHT_WIDE)
-	bar_v.connect("value_changed", self, "_on_bar_v_changed")
-	add_child(bar_v)
-
-
 func _remove_scroll_bar() -> void:
 	if is_instance_valid(bar_v):
 		bar_v.queue_free()
@@ -262,6 +292,18 @@ func _limit_transform_to_rect(old: Transform2D) -> Transform2D:
 	old.origin = _get_nearest_point_in_rect(old.origin + offset, area_rect) - offset
 	return old
 
+func _add_scrooll_bars() -> void:
+	bar_v = VScrollBar.new()
+	bar_v.set_anchors_and_margins_preset(Control.PRESET_RIGHT_WIDE)
+	bar_v.connect("value_changed", self, "_on_bar_v_changed")
+	add_child(bar_v)
+	bar_h = HScrollBar.new()
+	bar_h.set_anchors_and_margins_preset(Control.PRESET_BOTTOM_WIDE)
+	bar_h.connect("value_changed", self, "_on_bar_h_changed")
+	add_child(bar_h)
+	_update_bar_pos()
+
+# static
 
 static func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
 	if rect.has_point(point):
@@ -269,3 +311,4 @@ static func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
 	point.x = max(rect.position.x, min(point.x, rect.end.x))
 	point.y = max(rect.position.y, min(point.y, rect.end.y))
 	return point
+

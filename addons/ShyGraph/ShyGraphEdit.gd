@@ -139,16 +139,18 @@ func _on_Nodes_id_pressed(id:int) -> void:
 
 
 func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
-	area_rect = area_rect.expand(node.offset)
-	area_rect = area_rect.expand(node.offset + node.rect_size)
+	var rect = area_rect
+	rect = rect.expand(node.offset)
+	rect = rect.expand(node.offset + node.rect_size)
 	for i in selected_nodes:
 		if i == node:
 			continue
 		i.offset += amount
-		area_rect = area_rect.expand(i.offset)
-		area_rect = area_rect.expand(i.offset + i.rect_size)
+		rect = rect.expand(i.offset)
+		rect = rect.expand(i.offset + i.rect_size)
 	update()
 	emit_signal("node_moved", node)
+	self.area_rect = rect
 
 
 func _on_node_selected(multiple: bool, node: ShyGraphNode) -> void:
@@ -208,16 +210,6 @@ func deselect() -> void:
 		i.selected = false
 		_on_node_deselected(i)
 	selected_nodes = []
-
-
-func update_rect() -> void:
-	var rect = Rect2(offset_to_position(Vector2.ZERO), Vector2.ZERO)
-	for i in get_children():
-		if i is ShyGraphNode:
-			rect = rect.expand(i.rect_position)
-			rect = rect.expand(i.rect_position + i.rect_size)
-	area_rect = position_to_offset(rect)
-	self.transform = transform
 
 
 func select(node: ShyGraphNode) -> void:
