@@ -458,8 +458,10 @@ func _break_connections() -> void:
 	var list = []
 	for connection in connections:
 		var line = _create_line(connection).line
-		if Geometry.intersect_polyline_with_polygon_2d(line, [break_from, break_from + Vector2.ONE, get_local_mouse_position()]):
-			list.append(connection)
+		for i in line.size() - 1:
+			if Geometry.segment_intersects_segment_2d(break_from, position_to_offset(get_local_mouse_position()), line[i], line[i + 1]):
+				list.append(connection)
+				break
 	for i in list:
 		remove_connection(i)
 	break_from = Vector2.ZERO
