@@ -472,11 +472,12 @@ func _start_select_drag() -> void:
 
 
 func _end_select_drag() -> void:
-	var rect = Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from)
+	var rect = Rect2(select_from, Vector2.ZERO)
+	rect.end = position_to_offset(get_local_mouse_position())
 	var nodes := []
 	for i in get_children():
 		if i is ShyGraphNode:
-			if i.get_rect().intersects(rect):
+			if rect.abs().intersects(Rect2(i.offset, i.rect_size)):
 				nodes.append(i)
 	select_multiple(nodes)
 	select_from = Vector2.ZERO
