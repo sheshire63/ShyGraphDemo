@@ -26,18 +26,19 @@ var transform := Transform2D.IDENTITY setget _set_offset; func _set_offset(new) 
 		new =_limit_transform_to_rect(new)
 		transform = new
 		_update_bar_pos()
-		emit_signal("transform_changed")
+		emit_signal("transform_changed", transform)
 		update()
 var area_rect := Rect2() setget _set_area_rect; func _set_area_rect(new) -> void:
 		if new != area_rect:
 			area_rect = new
 			_update_bars()
-			_update_bar_pos()
 			emit_signal("area_rect_changed")
 var bar_h: ScrollBar
 var bar_v: ScrollBar
+var undo := UndoRedo.new()
 
 # theme settings
+var background: StyleBox
 var grid_step := 128
 var grid_substeps := 1
 var max_scale := 1000
@@ -63,16 +64,6 @@ func _ready() -> void:
 		_add_scrooll_bars()
 	
 
-
-func _draw() -> void:
-	draw_style_box(get_stylebox("bg", "GraphEdit"), Rect2(Vector2.ZERO, rect_size))
-	_draw_grid()
-	if ruler:
-		_draw_ruler()
-	draw_set_transform_matrix(transform.affine_inverse())
-	draw_rect(area_rect, Color.green, false)
-
-
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.is_pressed():
 		match event.button_index:
@@ -84,24 +75,29 @@ func _gui_input(event: InputEvent) -> void:
 		if Input.is_mouse_button_pressed(BUTTON_MIDDLE):
 			move(-event.relative)
 
+
+func _unhandled_key_input(event: InputEventKey) -> void:
+	if event.scancode == KEY_Z and event.control == true:
+		if event.shift:
+			undo.redo()
+		else:
+			undo.undo()
+
+
+func _draw() -> void:
+	draw_style_box(background, Rect2(Vector2.ZERO, rect_size))
+	_draw_grid()
+	if ruler:
+		_draw_ruler()
+	draw_set_transform_matrix(transform.affine_inverse())
+	draw_rect(area_rect, Color.green, false)
+
+
 # puplic
 
+# resets the transform aka resets canvas position and scale
 func reset() -> void:
-	self.transform = Transform2D.IDENTITY
-	_reset_area()
 	_reset()
-	update()
-
-
-
-func _reset_area() -> void:
-	var rect = get_rect()
-	for i in get_children():
-		if i is ShyGraphNode:
-			rect.expand(i.offset)
-			rect.expand(i.offset + i.rect_size)
-	self.area_rect = rect
-
 
 
 func move(amount: Vector2) -> void:
@@ -117,14 +113,7 @@ func scale(amount: float) -> void:
 
 
 func scale_to(scale: float) -> void:
-	scale = max(min_scale / 100.0, min(scale, max_scale / 100.0))
-	var mouse_from = position_to_offset(get_local_mouse_position())
-	var new = Transform2D.IDENTITY.scaled(Vector2.ONE * scale)
-	new.origin = transform.origin
-	transform = new
-	var mouse_to = position_to_offset(get_local_mouse_position())
-	transform.origin += mouse_from - mouse_to
-	self.transform = transform
+	_scale(scale)
 
 
 func offset_to_position(value, translate := true):
@@ -146,19 +135,11 @@ func position_to_offset(value, translate := true):
 
 # virtual
 
-func _select_area(_area: Rect2) -> void:
-	pass
-
-
-func _reset() -> void:
-	pass
-
-
 func _update() -> void:
 	pass
 
 
-func _on_transform_changed() -> void:
+func _on_transform_changed(_transform: Transform2D) -> void:
 	pass
 
 #set
@@ -189,6 +170,7 @@ func _update_bars() -> void:
 	if bar_h:
 		bar_h.min_value = area_rect.position.x - offset.x
 		bar_h.max_value = area_rect.end.x - offset.x
+	_update_bar_pos()
 
 
 func _update_bar_pos() -> void:
@@ -251,6 +233,7 @@ func _draw_ruler() -> void:
 
 
 func _update_theme() -> void:
+	background = get_stylebox("bg", "")
 	if has_constant("grid_step", ""):
 		grid_step = get_constant("grid_step", "")
 	if has_constant("grid_substeps", ""):
@@ -312,3 +295,28 @@ static func _get_nearest_point_in_rect(point: Vector2, rect: Rect2) -> Vector2:
 	point.y = max(rect.position.y, min(point.y, rect.end.y))
 	return point
 
+
+func _reset_area() -> void:
+	var rect = get_rect()
+	for i in get_children():
+		if i is ShyGraphNode:
+			rect.expand(i.offset)
+			rect.expand(i.offset + i.rect_size)
+	self.area_rect = rect
+
+
+func _reset() -> void:
+	self.transform = Transform2D.IDENTITY
+	_reset_area()
+	update()
+
+
+func _scale(scale_to) -> void:
+	scale_to = max(min_scale / 100.0, min(scale_to, max_scale / 100.0))
+	var mouse_from = position_to_offset(get_local_mouse_position())
+	var new = Transform2D.IDENTITY.scaled(Vector2.ONE * scale_to)
+	new.origin = transform.origin
+	transform = new
+	var mouse_to = position_to_offset(get_local_mouse_position())
+	transform.origin += mouse_from - mouse_to
+	self.transform = transform

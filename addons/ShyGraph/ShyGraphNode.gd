@@ -5,54 +5,43 @@ class_name ShyGraphNode
 
 signal offset_changed(new_offset)
 signal moved(amount)
+signal moved_to(new_offset)
 signal slot_added(slot, id)
-signal slot_removed(slot)
-signal selected(multiple)
+signal slot_changed(slot, id)
+signal slot_removed(slot, id)
+signal selected
 signal deselected
-signal request_deselect
 signal delete
+
+signal _request_select()
 
 
 enum ALLIGN {BEGIN, CENTER, END}
 enum SIDE {LEFT, RIGHT, TOP, BOTTOM}
 
 
-var offset := Vector2.ZERO setget _set_offset
-func _set_offset(new):
-	offset = new
-	update_position()
-	
+var offset := Vector2.ZERO setget _set_offset; func _set_offset(new):
+		offset = new
+		_update_position()
+		emit_signal("offset_changed", offset)
 var slots := [] setget _set_slots
 func _set_slots(new) -> void:
-	clear()
+	_clear_slots()
 	slots = new
-	setup()
-var slot_controls := {}
+	_setup_slots()
 var type: String
 var selected := false setget _set_selected
 
+var _slot_controls := {}
+var _is_moving := false
+var _moved_from: Vector2
 
-#virtual----------------------------------------------------
-
-
-func _save_data() -> Dictionary:
-	return {}
-
-
-func _load_data(data:= {}) -> void:
-	pass
+#theme
+var _background: StyleBox
+var _bg_selected: StyleBox
 
 
-func _delete() -> void:
-	pass
-
-
-func _copy(copy) -> void:#if you need to set somthing in the copy.
-	pass
-
-
-#behavior----------------------------------------------------
-
+# flow
 
 func _get_property_list() -> Array:
 	var list := [
@@ -75,66 +64,33 @@ func _init() -> void:
 	
 
 func _ready() -> void:
-	move(Vector2.ZERO)
+	if get_parent().has_signal("transform_changed"):
+		get_parent().connect("transform_changed", self, "_on_parent_transform_changed")
+	_update_theme()
 
-
-func _draw() -> void:
-	if selected:
-		if has_stylebox("selected", "ShyGraphNode"):
-			draw_style_box(get_stylebox("selected", "ShyGraphNode") , Rect2(Vector2.ZERO, rect_size))
-		else:
-			modulate = Color(1.1, 1.1, 1.1, 1)
-	else:
-		if has_stylebox("selected", "ShyGraphNode"):
-			draw_style_box(get_stylebox("default", "ShyGraphNode"), Rect2(Vector2.ZERO, rect_size))
-		else:
-			modulate = Color.white
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		if Input.is_mouse_button_pressed(BUTTON_LEFT):
-			move(event.relative)
+			_move(event.relative)
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_LEFT:
-			if event.pressed:
-				select()
+		match event.button_index:
+			BUTTON_LEFT:
+				if event.pressed:
+					emit_signal("_request_select", self)
+				else:
+					_end_move()
 
 
-#functions----------------------------------------------------
-
-
-func clear() -> void:
-	for i in slot_controls:
-		remove_child(slot_controls[i])
-		slot_controls[i].queue_free()
-	slot_controls = {}
-	slots = []
-
-
-func setup() -> void:
-	for i in slots.size():
-		if !slots[i]:
-			slots[i] = new_slot()
-		add_slot_control(slots[i], i)
-
-
-func move(amount:Vector2) -> void:
-	self.offset += amount
-	emit_signal("moved", amount)
-
-
-func update_position() -> void:
-	var new: Vector2
-	if get_parent().has_method("offset_to_position"):
-		new = get_parent().offset_to_position(offset)
+func _draw() -> void:
+	if selected:
+		draw_style_box(_bg_selected , Rect2(Vector2.ZERO, rect_size))
 	else:
-		new = offset
-	if rect_position != new:
-		rect_position = new
-		emit_signal("offset_changed", offset)
-	for i in slot_controls:
-		slot_controls[i].update()
+		draw_style_box(_background, Rect2(Vector2.ZERO, rect_size))
 
+
+
+# public
 
 func save_data() -> Dictionary:
 	return {
@@ -147,27 +103,21 @@ func save_data() -> Dictionary:
 
 func load_data(data:= {}) -> void:
 	if "offset" in data:
-		offset = data["offset"]
+		self.offset = data["offset"]
 	if "slots" in data:
-		slots = data["slots"]
+		self.slots = data["slots"]
 	if "type" in data:
-		type = data["type"]
+		self.type = data["type"]
 	if "data" in data:
 		_load_data(data.data)
 
 
 func select() -> void:
-	if Input.is_key_pressed(KEY_CONTROL):
-		if selected:
-			self.selected = false
-			emit_signal("deselected")
-		else: 
-			self.selected = true
-			emit_signal("selected", true)
-	elif !selected:
-		emit_signal("request_deselect")
-		self.selected = true
-		emit_signal("selected", false)
+	if Input.is_key_pressed(KEY_CONTROL) and selected:
+			deselect()
+			return
+	self.selected = true
+	emit_signal("selected")
 
 
 func deselect() -> void:
@@ -227,20 +177,20 @@ func add_slot_control(slot: Dictionary, index: int) -> SlotButton:
 	var control = SlotButton.new(index)
 	add_child(control)
 	control.slot = slot
-	slot_controls[slots.find(slot)] = control
+	_slot_controls[slots.find(slot)] = control
 	return control
 
 
 func remove_slot_control(slot: int) -> void:
-	remove_child(slot_controls[slot])
-	slot_controls[slot].queue_free()
-	slot_controls.erase(slot)
+	remove_child(_slot_controls[slot])
+	_slot_controls[slot].queue_free()
+	_slot_controls.erase(slot)
 
 
 func update_slot(slot: Dictionary) -> void:
 	var index = slots.find(slot)
-	if index in slot_controls:#slot gets checked as value not as reference or the slot in button is not the same
-		slot_controls[index].update_position()
+	if index in _slot_controls:#slot gets checked as value not as reference or the slot in button is not the same
+		_slot_controls[index].update_position()
 		update()
 
 
@@ -250,7 +200,26 @@ func get_slot(id: int) -> Dictionary:
 	return {}
 
 
-#internal funcs----------------------------------------------------
+#virtual----------------------------------------------------
+
+
+func _save_data() -> Dictionary:
+	return {}
+
+
+func _load_data(data:= {}) -> void:
+	pass
+
+
+func _delete() -> void:
+	pass
+
+
+func _copy(copy) -> void:#if you need to set somthing in the copy.
+	pass
+
+
+# private funcs----------------------------------------------------
 
 
 func _set_selected(new: bool) -> void:
@@ -305,3 +274,62 @@ func _get_slot_offset(slot: Dictionary) -> Vector2:
 	return res + slot.offset
 
 
+func _update_theme() -> void:
+	if has_stylebox("background", ""):
+		_background = get_stylebox("background", "")
+	else:
+		_background = StyleBoxFlat.new()
+		_background.bg_color = Color(0.2,0.2,0.2)
+	if has_stylebox("background_selected", ""):
+		_bg_selected = get_stylebox("background_selected", "")
+	else:
+		_bg_selected = StyleBoxFlat.new()
+		_bg_selected.bg_color = Color(0.3,0.3,0.3)
+
+
+func _clear_slots() -> void:
+	for i in _slot_controls:
+		remove_child(_slot_controls[i])
+		_slot_controls[i].queue_free()
+	_slot_controls = {}
+	slots = []
+
+
+func _setup_slots() -> void:
+	for i in slots.size():
+		if !slots[i]:
+			slots[i] = new_slot()
+		add_slot_control(slots[i], i)
+
+
+func _update_position() -> void:
+	var new: Vector2
+	if get_parent() and get_parent().has_method("offset_to_position"):
+		new = get_parent().offset_to_position(offset)
+	else:
+		new = offset
+	rect_position = new
+
+
+func _update_slots() -> void:
+	for i in _slot_controls:
+		_slot_controls[i].update()
+
+
+func _end_move() -> void:
+	if _is_moving:
+		_is_moving = false
+		emit_signal("moved_to", offset, _moved_from)
+
+
+func _move(amount:Vector2) -> void:
+	if !_is_moving:
+		_is_moving = true
+		_moved_from = offset
+	self.offset += amount
+	emit_signal("moved", amount)
+
+
+func _on_parent_transform_changed(transform: Transform2D) -> void:
+	_update_position()
+	rect_scale = Vector2.ONE / transform.get_scale()

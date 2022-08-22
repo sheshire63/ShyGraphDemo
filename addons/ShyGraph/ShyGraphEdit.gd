@@ -21,7 +21,7 @@ signal nodes_loaded
 signal cleared
 signal node_added (node)#not called on load
 signal node_removed (node) #not called on clear
-signal node_moved (node)
+signal nodes_moved (nodes)
 signal node_selected (node)
 signal node_deselected (node)
 
@@ -34,7 +34,8 @@ var types := [] setget _set_types; func _set_types(new) -> void:
 			if !new[i]:
 				new[i] = new_type()
 		types = new
-		update_nodes()
+		update()
+# 		_update_nodes()
 export(line_types) var line_type := line_types.line
 
 var nodes := {}
@@ -76,23 +77,13 @@ func _ready() -> void:
 		return
 	_load_nodes()
 	connect("transform_changed", self, "_on_transform_changed")
+	undo.connect("version_changed", self, "_on_undo_v_change")
+	update()
 
 
 func _process(delta: float) -> void:
 	if create_connection_from or break_from or select_from:
 		update()
-
-
-func _draw() -> void:
-	var tf = transform.affine_inverse()
-	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
-	_draw_connections()
-	_draw_create_connection()
-	if break_from:
-		draw_line(break_from, position_to_offset(get_local_mouse_position()), break_line_color, break_line_width)
-	if select_from:
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_fill_color)
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_stroke_color, false, selection_stroke_width)
 
 
 func _input(event: InputEvent) -> void:
@@ -124,106 +115,61 @@ func _gui_input(event: InputEvent) -> void:
 					node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
 		else:
 			if event.button_index == BUTTON_LEFT:
-				if Input.is_key_pressed(KEY_CONTROL):
+				if break_from:
 					_break_connections()
-				_end_select_drag()
+				elif select_from:
+					_end_select_drag()
 
 
-func _on_Nodes_id_pressed(id:int) -> void:
-	var node =_create_node_instance(nodes.values()[id])
-	node.type = nodes.keys()[id]
-	node.offset = position_to_offset(get_local_mouse_position())
-	emit_signal("node_added", node)
-
-#node flow
-
-
-func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
-	var rect = area_rect
-	rect = rect.expand(node.offset)
-	rect = rect.expand(node.offset + node.rect_size)
-	for i in selected_nodes:
-		if i == node:
-			continue
-		i.offset += amount
-		rect = rect.expand(i.offset)
-		rect = rect.expand(i.offset + i.rect_size)
-	update()
-	emit_signal("node_moved", node)
-	self.area_rect = rect
+func _draw() -> void:
+	var tf = transform.affine_inverse()
+	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
+	_draw_connections()
+	_draw_create_connection()
+	if break_from:
+		draw_line(break_from, position_to_offset(get_local_mouse_position()), break_line_color, break_line_width)
+	if select_from:
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_fill_color)
+		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_stroke_color, false, selection_stroke_width)
 
 
-func _on_node_selected(multiple: bool, node: ShyGraphNode) -> void:
-	if !multiple:
-		deselect()
-	selected_nodes.append(node)
-	emit_signal("node_selected", node)
 
-
-func _on_node_deselected(node: ShyGraphNode) -> void:
-	selected_nodes.erase(node)
-	emit_signal("node_deselected", node)
-
-
-func _on_node_delete(node) -> void:
-	var to_remove = []
-	for i in connections:
-		if i.from.node == node.name or i.to.node == node.name:
-			to_remove.append(i)
-	for i in to_remove:
-		remove_connection(i)
-	emit_signal("node_removed", node)
-
-
-func _on_node_request_deselect() -> void:
-	deselect()
-
-
-# overrides
-
-
-func _set_is_editor(new) -> void:
-	._set_is_editor(new)
-	if !new:
-		_load_nodes()
-
-
-func _on_transform_changed() -> void:
-	update_nodes()
-
-
-# global
+# puplic
 
 func clear() -> void:
-	connections = []
-	create_connection_from = {}
-	selected_nodes = []
-	for i in get_children():
-		if i is ShyGraphNode:
-			i.queue_free()
-	reset()
+	_clear()
 	emit_signal("cleared")
 
 
-func deselect() -> void:
-	for i in selected_nodes:
-		i.selected = false
-		_on_node_deselected(i)
-	selected_nodes = []
-
-
-func select(node: ShyGraphNode) -> void:
-	if node in selected_nodes:
-		return
-	selected_nodes.append(node)
-	node.selected = true
+func deselect_all() -> void:
+	undo.create_action("deselect_all")
+	undo.add_do_method(self, "_deselect_multipple", selected_nodes.duplicate())
+	undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
+	undo.commit_action()
 
 
 func select_multiple(nodes: Array) -> void:
+	undo.create_action("select_mutiple")
 	if !Input.is_key_pressed(KEY_CONTROL):
-		deselect()
-	for i in nodes:
-		select(i)	
+		undo.add_do_method(self, "_deselect_multipple", selected_nodes.duplicate())
+		undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
+	undo.add_do_method(self, "_select_multiple", nodes.duplicate())
+	undo.add_undo_method(self, "_deselect_multipple", nodes.duplicate())
+	undo.commit_action()
+
+
+func deselect(node) -> void:
+	undo.create_action("deselect")
+	undo.add_do_method(self, "_deselect", node)
+	undo.add_undo_method(self, "_select", node)
+	undo.commit_action()
+
+
+func select(node: ShyGraphNode) -> void:
+	undo.create_action("select")
+	undo.add_do_method(self, "_select", node)
+	undo.add_undo_method(self, "_deselect", node)
+	undo.commit_action()
 
 
 func init_drag(slot: Dictionary) -> void:
@@ -258,22 +204,20 @@ func load_data(data: Dictionary) -> void:
 func add_connection(from: Dictionary, to: Dictionary) -> void:
 	if !_is_connection_allowed(from, to):
 		return
-	var from_node: ShyGraphNode = get_node(from.node)
-	var from_slot = from_node.get_slot(from.slot)
-	var to_node: ShyGraphNode = get_node(to.node)
-	var to_slot = to_node.get_slot(to.slot)
-	if !types[from_slot.type].multiple:
-		_disconnect_slot(from.node, from.slot)
-	if !types[to_slot.type].multiple:
-		_disconnect_slot(to.node, to.slot)
-	connections.append({"from": from, "to": to})
+	undo.create_action("add_connection")
+	var conn = {"from": from, "to": to}
+	undo.add_do_method(self, "_add_connection", conn)
+	undo.add_undo_method(self, "_remove_connection", conn)
+	undo.commit_action()
 	emit_signal("connected", from, to)
 
 
-func remove_connection(connection: Dictionary) -> void:
-	connections.erase(connection)
-	update()
-	emit_signal("disconnected", connection.from, connection.to)
+func remove_connection(from: Dictionary, to: Dictionary) -> void:
+	undo.create_action("remove_connection")
+	undo.add_do_method(self, "_remove_connection", {"from": from, "to": to})
+	undo.add_undo_method(self, "_add_connection", {"from": from, "to": to})
+	undo.commit_action()
+	emit_signal("disconnected", from, to)
 
 
 func get_type_color(type: int) -> Color:
@@ -300,14 +244,6 @@ func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), mult
 		}
 
 
-#updates pos and scale on each node
-func update_nodes() -> void:
-	for child in get_children():
-		if child is ShyGraphNode:
-			child.update_position()
-			child.rect_scale = Vector2.ONE / transform.get_scale()
-
-
 #get slot from node
 func get_slot(node_name:String, slot: int) -> Dictionary:
 	var node: ShyGraphNode = get_node(node_name)
@@ -317,9 +253,15 @@ func get_slot(node_name:String, slot: int) -> Dictionary:
 
 
 func delete_selected() -> void:
+	undo.create_action("delete_selected")
 	for i in selected_nodes:
-		i.delete()
-	selected_nodes = []
+		undo.add_undo_reference(i)
+	undo.add_do_method(self, "_delete_multiple", selected_nodes.duplicate())
+	undo.add_undo_method(self, "_restore_nodes", selected_nodes.duplicate())
+	undo.add_undo_property(self, "connections", connections.duplicate())
+	undo.add_do_property(self, "selected_nodes", [])
+	undo.add_undo_property(self, "selected_nodes", selected_nodes.duplicate())
+	undo.commit_action()
 
 
 func copy_selected() -> void:
@@ -334,15 +276,89 @@ func add_type(type := {}) -> void:
 	types.append(type)
 
 
-# private
 
+# events
+
+func _on_Nodes_id_pressed(id:int) -> void:
+	var node =_create_node_instance(nodes.values()[id])
+	node.type = nodes.keys()[id]
+	node.offset = position_to_offset(get_local_mouse_position())
+	emit_signal("node_added", node)
+
+
+func _on_undo_v_change() -> void:
+	update()
+
+
+
+# node events
+
+func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
+	var rect = area_rect
+	rect = rect.expand(node.offset)
+	rect = rect.expand(node.offset + node.rect_size)
+	for i in selected_nodes:
+		if i == node:
+			continue
+		i.offset += amount
+		rect = rect.expand(i.offset)
+		rect = rect.expand(i.offset + i.rect_size)
+	update()
+	emit_signal("nodes_moved", selected_nodes)
+	self.area_rect = rect
+
+
+func _on_node_moved_to(to: Vector2, from: Vector2, node: ShyGraphNode) -> void:
+	undo.create_action("node_moved")
+	for i in selected_nodes:
+		undo.add_do_property(node, "offset", node.offset)
+		undo.add_undo_property(node, "offset", node.offset - (to-from))
+	undo.commit_action()
+	update()
+
+
+func _on_node_request_select(node: ShyGraphNode) -> void:
+	undo.create_action("node_selected")
+	if !Input.is_key_pressed(KEY_CONTROL):
+		undo.add_do_method(self, "_deselect_multipple", selected_nodes.duplicate())
+		undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
+	undo.add_do_method(node, "select")
+	undo.add_undo_method(node, "deselect")
+	undo.commit_action()
+
+
+func _on_node_selected(node: ShyGraphNode) -> void:
+	selected_nodes.append(node)
+	emit_signal("node_selected", node)
+
+
+func _on_node_deselected(node: ShyGraphNode) -> void:
+	selected_nodes.erase(node)
+	emit_signal("node_deselected", node)
+
+
+func _on_node_delete(node) -> void:
+	_delete_node(node)
+	emit_signal("node_removed", node)
+
+
+
+# overrides
+
+func _set_is_editor(new) -> void:
+	._set_is_editor(new)
+	if !new:
+		_load_nodes()
+
+
+# private
 
 func _create_line(connection: Dictionary) -> Dictionary:
 	var from: Dictionary = connection.from
 	var to: Dictionary = connection.to
 	if !has_node(from.node):
 		printerr("node not found: %s"%(from.node))
-		remove_connection(connection)
+		remove_connection(connection.from, connection.to)
 		return {"line": [], "colors": []}
 	var from_node = get_node(from.node)
 	var from_pos = from_node.get_slot_offset(from.slot)
@@ -442,15 +458,18 @@ func _create_node_instance(node, data := {}) -> ShyGraphNode:
 	elif node is Script:
 		node = node.new()
 	
-	if node is ShyGraphNode:
-		node.load_data(data)
-		node.rect_scale = Vector2.ONE / transform.get_scale()
-		node.connect("moved", self, "_on_node_moved", [node])
-		node.connect("selected", self, "_on_node_selected", [node])
-		node.connect("deselected", self, "_on_node_deselected", [node])
-		node.connect("delete", self, "_on_node_delete", [node])
-		node.connect("request_deselect", self, "_on_node_request_deselect")
-		add_child(node, true)
+	if not node is ShyGraphNode:
+		printerr("node is not a ShyGraphNode")
+		node = ShyGraphNode.new()
+	node.rect_scale = Vector2.ONE / transform.get_scale()
+	node.connect("moved", self, "_on_node_moved", [node])
+	node.connect("moved_to", self, "_on_node_moved_to", [node])
+	node.connect("selected", self, "_on_node_selected", [node])
+	node.connect("deselected", self, "_on_node_deselected", [node])
+	node.connect("delete", self, "_on_node_delete", [node])
+	node.connect("_request_select", self, "_on_node_request_select")
+	add_child(node, true)
+	node.load_data(data)
 	return node
 
 
@@ -462,9 +481,14 @@ func _break_connections() -> void:
 			if Geometry.segment_intersects_segment_2d(break_from, position_to_offset(get_local_mouse_position()), line[i], line[i + 1]):
 				list.append(connection)
 				break
-	for i in list:
-		remove_connection(i)
+	if list:
+		undo.create_action("break_connections")
+		for i in list:
+			undo.add_do_method(self, "_remove_connection", i)
+			undo.add_undo_method(self, "_add_connection", i)
+		undo.commit_action()
 	break_from = Vector2.ZERO
+	update()
 
 
 func _start_select_drag() -> void:
@@ -499,9 +523,12 @@ func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
 func _disconnect_slot(node: String, slot: int) -> void:
 	for connection in connections:
 		if connection.from.node == node and connection.from.slot == slot:
-			remove_connection(connection)
+			_remove_connection(connection)
 		elif connection.to.node == node and connection.to.slot == slot:
-			remove_connection(connection)
+			_remove_connection(connection)
+		else:
+			continue
+		emit_signal("disconnected", connection.from, connection.to)
 
 
 func _update_theme() -> void:
@@ -518,3 +545,84 @@ func _update_theme() -> void:
 		selection_stroke_color = get_color("selection_stroke_color", "")
 	if has_constant("selection_stroke_width", ""):
 		selection_stroke_width = get_constant("selection_stroke_width", "")
+
+
+func _clear() -> void:
+	connections = []
+	create_connection_from = {}
+	selected_nodes = []
+	for i in get_children():
+		if i is ShyGraphNode:
+			i.queue_free()
+	_reset()
+
+
+func _select_multiple(nodes: Array) -> void:
+	for i in nodes:
+		_select(i)
+
+
+func _deselect_multipple(nodes: Array) -> void:
+	for i in nodes:
+		_deselect(i)
+
+
+func _select(node: ShyGraphNode) -> void:
+	node.select()
+
+
+func _deselect(node: ShyGraphNode) -> void:
+	node.deselect()
+
+
+func _add_connection(connection: Dictionary) -> void:
+	var from_node: ShyGraphNode = get_node(connection.from.node)
+	var from_slot = from_node.get_slot(connection.from.slot)
+	var to_node: ShyGraphNode = get_node(connection.to.node)
+	var to_slot = to_node.get_slot(connection.to.slot)
+	if !types[from_slot.type].multiple:
+		_disconnect_slot(connection.from.node, connection.from.slot)
+	if !types[to_slot.type].multiple:
+		_disconnect_slot(connection.to.node, connection.to.slot)
+	connections.append(connection)
+	update()
+
+
+func _remove_connection(connection: Dictionary) -> void:
+	print(connections.has(connection))
+	connections.erase(connection)
+	update()
+
+
+func _delete_multiple(nodes: Array) -> void:
+	for i in nodes:
+		_delete_node(i)
+
+
+func _delete_node(node: ShyGraphNode) -> void:
+	var to_remove = []
+	for i in connections:
+		if i.from.node == node.name or i.to.node == node.name:
+			to_remove.append(i)
+	for i in to_remove:
+		_remove_connection(i)
+		emit_signal("disconnected", i.from, i.to)
+
+	_deselect(node)
+	node.queue_free()
+
+
+func _restore_nodes(nodes: Array) -> void:
+	for i in nodes:
+		_restore_node(i)
+
+
+func _restore_node(node: ShyGraphNode) -> void:
+	#func that adds the node and sets it up
+	add_child(node)
+
+
+# func _update_nodes() -> void:
+# 	for i in get_children():
+# 		if i is ShyGraphNode:
+# 			i.update()
