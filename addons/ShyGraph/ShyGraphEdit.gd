@@ -75,7 +75,8 @@ func _get_property_list() -> Array:
 
 
 func _ready() -> void:
-	if Engine.editor_hint:
+	if !owner or (Engine.editor_hint and owner.get_parent() is Viewport):
+		print("editor_only")
 		return
 	_load_nodes()
 	connect("transform_changed", self, "_on_transform_changed")
@@ -89,8 +90,6 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_key_input(event: InputEventKey) -> void:
-	if Engine.editor_hint:
-		return
 	if event.is_pressed():
 		match event.scancode:
 			KEY_C:
@@ -110,8 +109,6 @@ func _unhandled_key_input(event: InputEventKey) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if Engine.editor_hint:
-		return
 	if event is InputEventMouseButton:
 		if event.is_pressed():
 			match event.button_index:
