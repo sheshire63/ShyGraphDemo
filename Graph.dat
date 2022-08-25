@@ -54,7 +54,7 @@
 "ShyGraphNode2": {
 "data": {
 },
-"offset": Vector2( 579.774, 35.285 ),
+"offset": Vector2( 621.574, 47.385 ),
 "slots": [ {
 "active": true,
 "allign": 1,
@@ -78,6 +78,52 @@
 "data": {
 },
 "offset": Vector2( 262.939, 245.624 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode4": {
+"data": {
+},
+"offset": Vector2( 511, 303 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode5": {
+"data": {
+},
+"offset": Vector2( 418, 246 ),
 "slots": [ {
 "active": true,
 "allign": 1,

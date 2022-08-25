@@ -40,11 +40,13 @@ export(line_types) var line_type := line_types.line
 
 var nodes := {}
 var connections := []
-var create_connection_from := {}
-var hover_slot := {}
-var break_from: Vector2
 var selected_nodes := []
-var select_from : Vector2
+
+var _create_connection_from := {}
+var _hover_slot := {}
+var _break_from: Vector2
+var _select_from : Vector2
+var _copy_data: Dictionary
 
 #theme
 var break_line_color := Color.red
@@ -82,20 +84,28 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if create_connection_from or break_from or select_from:
+	if _create_connection_from or _break_from or _select_from:
 		update()
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_key_input(event: InputEventKey) -> void:
 	if Engine.editor_hint:
 		return
-	if event is InputEventKey:
-		match event.scancode:
-			KEY_CONTROL:
-				break_from = Vector2.ZERO
-				update()
-			KEY_DELETE:
-				delete_selected()
+	match event.scancode:
+		KEY_C:
+			if event.control:
+				copy()
+		KEY_V:
+			if event.control:
+				paste()
+		KEY_D:
+			if event.control:
+				duplicate()
+		KEY_CONTROL:
+			_break_from = Vector2.ZERO
+			update()
+		KEY_DELETE:
+			delete_selected()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -105,9 +115,9 @@ func _gui_input(event: InputEvent) -> void:
 		if event.is_pressed():
 			match event.button_index:
 				BUTTON_LEFT:
-					create_connection_from = {}
+					_create_connection_from = {}
 					if Input.is_key_pressed(KEY_CONTROL):
-						break_from = position_to_offset(get_local_mouse_position())
+						_break_from = position_to_offset(get_local_mouse_position())
 					else:
 						_start_select_drag()
 					update()
@@ -115,9 +125,9 @@ func _gui_input(event: InputEvent) -> void:
 					node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
 		else:
 			if event.button_index == BUTTON_LEFT:
-				if break_from:
+				if _break_from:
 					_break_connections()
-				elif select_from:
+				elif _select_from:
 					_end_select_drag()
 
 
@@ -126,11 +136,11 @@ func _draw() -> void:
 	draw_set_transform(tf.origin, tf.get_rotation(), tf.get_scale())
 	_draw_connections()
 	_draw_create_connection()
-	if break_from:
-		draw_line(break_from, position_to_offset(get_local_mouse_position()), break_line_color, break_line_width)
-	if select_from:
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_fill_color)
-		draw_rect(Rect2(select_from, position_to_offset(get_local_mouse_position()) - select_from), selection_stroke_color, false, selection_stroke_width)
+	if _break_from:
+		draw_line(_break_from, position_to_offset(get_local_mouse_position()), break_line_color, break_line_width)
+	if _select_from:
+		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), selection_fill_color)
+		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), selection_stroke_color, false, selection_stroke_width)
 
 
 
@@ -173,7 +183,7 @@ func select(node: ShyGraphNode) -> void:
 
 
 func init_drag(slot: Dictionary) -> void:
-	if create_connection_from:
+	if _create_connection_from:
 		_end_drag(slot)
 	else:
 		_start_drag(slot)
@@ -195,7 +205,9 @@ func load_data(data: Dictionary) -> void:
 		for i in data.nodes:
 			var node_data = data.nodes[i]
 			if node_data.type in nodes:
-				var node = _create_node_instance(nodes[node_data.type], node_data)
+				var node = _create_node_instance(nodes[node_data.type])
+				add_child(node, true)
+				node.load_data(node_data)
 				node.name = i
 			else:
 				printerr("node type not found: %s"%(node_data.type))
@@ -264,10 +276,16 @@ func delete_selected() -> void:
 	undo.commit_action()
 
 
-func copy_selected() -> void:
-	for i in selected_nodes:
-		add_child(i.copy())
-	selected_nodes = []
+func duplicate_selected() -> void:
+	_paste_nodes(_copy_selected())
+
+
+func copy() -> void:
+	_copy_data = _copy_selected()
+
+
+func paste() -> void:
+	_paste_nodes(_copy_data)
 
 
 func add_type(type := {}) -> void:
@@ -283,6 +301,13 @@ func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
 	node.offset = position_to_offset(get_local_mouse_position())
+
+	undo.create_action("add_node")
+	undo.add_do_reference(node)
+	undo.add_do_method(self, "add_child", node, true)
+	undo.add_undo_method(self, "remove_child", node)
+	undo.commit_action()
+
 	emit_signal("node_added", node)
 
 
@@ -405,11 +430,11 @@ func _draw_connections() -> void:
 
 
 func _draw_create_connection() -> void:
-	if create_connection_from:# todo add check
-		if !hover_slot or _is_connection_allowed(create_connection_from, hover_slot):
+	if _create_connection_from:# todo add check
+		if !_hover_slot or _is_connection_allowed(_create_connection_from, _hover_slot):
 			var line_data = _create_line({
-				"from": create_connection_from,
-				"to": hover_slot,
+				"from": _create_connection_from,
+				"to": _hover_slot,
 				})
 			draw_polyline_colors(line_data.line, line_data.colors)
 
@@ -439,18 +464,18 @@ func _load_nodes() -> void:
 
 
 func _start_drag(from: Dictionary) -> void:
-	create_connection_from = from
+	_create_connection_from = from
 
 
 func _end_drag(to := {}) -> void:
-	if create_connection_from:
+	if _create_connection_from:
 		if to:
-			add_connection(create_connection_from, to)
-	create_connection_from = {}
+			add_connection(_create_connection_from, to)
+	_create_connection_from = {}
 	update()
 
 
-func _create_node_instance(node, data := {}) -> ShyGraphNode:
+func _create_node_instance(node) -> ShyGraphNode:
 	if node is Node:
 		node = node.duplicate(7)
 	elif node is PackedScene:
@@ -468,8 +493,6 @@ func _create_node_instance(node, data := {}) -> ShyGraphNode:
 	node.connect("deselected", self, "_on_node_deselected", [node])
 	node.connect("delete", self, "_on_node_delete", [node])
 	node.connect("_request_select", self, "_on_node_request_select")
-	add_child(node, true)
-	node.load_data(data)
 	return node
 
 
@@ -478,7 +501,7 @@ func _break_connections() -> void:
 	for connection in connections:
 		var line = _create_line(connection).line
 		for i in line.size() - 1:
-			if Geometry.segment_intersects_segment_2d(break_from, position_to_offset(get_local_mouse_position()), line[i], line[i + 1]):
+			if Geometry.segment_intersects_segment_2d(_break_from, position_to_offset(get_local_mouse_position()), line[i], line[i + 1]):
 				list.append(connection)
 				break
 	if list:
@@ -487,16 +510,16 @@ func _break_connections() -> void:
 			undo.add_do_method(self, "_remove_connection", i)
 			undo.add_undo_method(self, "_add_connection", i)
 		undo.commit_action()
-	break_from = Vector2.ZERO
+	_break_from = Vector2.ZERO
 	update()
 
 
 func _start_select_drag() -> void:
-	select_from = position_to_offset(get_local_mouse_position())
+	_select_from = position_to_offset(get_local_mouse_position())
 
 
 func _end_select_drag() -> void:
-	var rect = Rect2(select_from, Vector2.ZERO)
+	var rect = Rect2(_select_from, Vector2.ZERO)
 	rect.end = position_to_offset(get_local_mouse_position())
 	var nodes := []
 	for i in get_children():
@@ -504,7 +527,7 @@ func _end_select_drag() -> void:
 			if rect.abs().intersects(Rect2(i.offset, i.rect_size)):
 				nodes.append(i)
 	select_multiple(nodes)
-	select_from = Vector2.ZERO
+	_select_from = Vector2.ZERO
 	update()
 
 
@@ -549,7 +572,7 @@ func _update_theme() -> void:
 
 func _clear() -> void:
 	connections = []
-	create_connection_from = {}
+	_create_connection_from = {}
 	selected_nodes = []
 	for i in get_children():
 		if i is ShyGraphNode:
@@ -622,7 +645,51 @@ func _restore_node(node: ShyGraphNode) -> void:
 	add_child(node)
 
 
-# func _update_nodes() -> void:
-# 	for i in get_children():
-# 		if i is ShyGraphNode:
-# 			i.update()
+func _convert_and_add_connections(conns: Array, ref: Dictionary) -> void:
+	for i in conns:
+		var new = i.duplicate()
+		new.from.node = ref[i.from.node].name
+		new.to.node = ref[i.to.node].name
+		_add_connection(new)
+
+
+func _copy_selected() -> Dictionary:
+	var data = {"nodes": {}, "connections": []}
+	for i in selected_nodes:
+		data.nodes.i.name = i.save_data()
+	for conn in connections:
+		if conn.from in data.nodes and conn.to in data.nodes:
+			data.connections.append(conn)
+	return data
+
+
+func _paste_nodes(data) -> void:
+	if !data:
+		return
+	var node_data := {}
+	var node_ref := {}
+	var conns := []
+	var names := []
+	for i in data.nodes:
+		var node = _create_node_instance(nodes[node_data.type])
+		names.append(node.name)
+		node_data[node] = data.nodes[i]
+		node_ref[i.name] = node
+	if !node_ref:
+		return
+	for conn in connections:
+		if conn.from.node in names and conn.to.node in names:
+			conns.append(conn)
+	
+	undo.create_action("paste")#we need a ref to convert the basenodenames to the new names
+	for i in node_ref:
+		var node = node_ref[i]
+		undo.add_do_reference(i)
+		undo.add_do_method(self, "add_child", node, true)
+		undo.add_do_method(i, "load_data", node_data[node])
+		undo.add_undo_method(self, "remove_child", node)
+	undo.add_do_method(self, "_convert_and_add_connections", conns, node_ref)
+	undo.add_undo_property(self, "connections", connections.duplicate())
+	undo.commit_action()
+	for i in node_ref:
+		node_ref[i].offset += Vector2.ONE * 64.0

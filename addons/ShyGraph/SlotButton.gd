@@ -37,14 +37,14 @@ func _gui_input(event: InputEvent) -> void:
 		if event.is_pressed():
 			edit.init_drag(slot_data)
 	if event is InputEventMouseMotion:
-		edit.hover_slot = {
+		edit._hover_slot = {
 			"slot": slot_index,
 			"node": node.name,
 		}
 
 
 func _on_mouse_exited() -> void:
-	edit.hover_slot = {}
+	edit._hover_slot = {}
 
 
 func _draw() -> void:
