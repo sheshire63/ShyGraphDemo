@@ -77,7 +77,8 @@ func _gui_input(event: InputEvent) -> void:
 		match event.button_index:
 			BUTTON_LEFT:
 				if event.pressed:
-					emit_signal("_request_select", self)
+					if !selected or Input.is_key_pressed(KEY_CONTROL):
+						emit_signal("_request_select", self)
 				else:
 					_end_move()
 

@@ -91,21 +91,22 @@ func _process(delta: float) -> void:
 func _unhandled_key_input(event: InputEventKey) -> void:
 	if Engine.editor_hint:
 		return
-	match event.scancode:
-		KEY_C:
-			if event.control:
-				copy()
-		KEY_V:
-			if event.control:
-				paste()
-		KEY_D:
-			if event.control:
-				duplicate()
-		KEY_CONTROL:
-			_break_from = Vector2.ZERO
-			update()
-		KEY_DELETE:
-			delete_selected()
+	if event.is_pressed():
+		match event.scancode:
+			KEY_C:
+				if event.control:
+					copy()
+			KEY_V:
+				if event.control:
+					paste()
+			KEY_D:
+				if event.control:
+					duplicate_selected()
+			KEY_CONTROL:
+				_break_from = Vector2.ZERO
+				update()
+			KEY_DELETE:
+				delete_selected()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -153,7 +154,7 @@ func clear() -> void:
 
 func deselect_all() -> void:
 	undo.create_action("deselect_all")
-	undo.add_do_method(self, "_deselect_multipple", selected_nodes.duplicate())
+	undo.add_do_method(self, "_deselect_multiple", selected_nodes.duplicate())
 	undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
 	undo.commit_action()
 
@@ -161,10 +162,10 @@ func deselect_all() -> void:
 func select_multiple(nodes: Array) -> void:
 	undo.create_action("select_mutiple")
 	if !Input.is_key_pressed(KEY_CONTROL):
-		undo.add_do_method(self, "_deselect_multipple", selected_nodes.duplicate())
+		undo.add_do_method(self, "_deselect_multiple", selected_nodes.duplicate())
 		undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
 	undo.add_do_method(self, "_select_multiple", nodes.duplicate())
-	undo.add_undo_method(self, "_deselect_multipple", nodes.duplicate())
+	undo.add_undo_method(self, "_deselect_multiple", nodes.duplicate())
 	undo.commit_action()
 
 
@@ -271,8 +272,8 @@ func delete_selected() -> void:
 	undo.add_do_method(self, "_delete_multiple", selected_nodes.duplicate())
 	undo.add_undo_method(self, "_restore_nodes", selected_nodes.duplicate())
 	undo.add_undo_property(self, "connections", connections.duplicate())
-	undo.add_do_property(self, "selected_nodes", [])
-	undo.add_undo_property(self, "selected_nodes", selected_nodes.duplicate())
+	undo.add_do_method(self, "_deselect_multiple", selected_nodes.duplicate())
+	undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
 	undo.commit_action()
 
 
@@ -345,7 +346,7 @@ func _on_node_moved_to(to: Vector2, from: Vector2, node: ShyGraphNode) -> void:
 func _on_node_request_select(node: ShyGraphNode) -> void:
 	undo.create_action("node_selected")
 	if !Input.is_key_pressed(KEY_CONTROL):
-		undo.add_do_method(self, "_deselect_multipple", selected_nodes.duplicate())
+		undo.add_do_method(self, "_deselect_multiple", selected_nodes.duplicate())
 		undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
 	undo.add_do_method(node, "select")
 	undo.add_undo_method(node, "deselect")
@@ -366,14 +367,6 @@ func _on_node_delete(node) -> void:
 	_delete_node(node)
 	emit_signal("node_removed", node)
 
-
-
-# overrides
-
-func _set_is_editor(new) -> void:
-	._set_is_editor(new)
-	if !new:
-		_load_nodes()
 
 
 # private
@@ -581,11 +574,12 @@ func _clear() -> void:
 
 
 func _select_multiple(nodes: Array) -> void:
+	print(nodes)
 	for i in nodes:
 		_select(i)
 
 
-func _deselect_multipple(nodes: Array) -> void:
+func _deselect_multiple(nodes: Array) -> void:
 	for i in nodes:
 		_deselect(i)
 
@@ -612,7 +606,6 @@ func _add_connection(connection: Dictionary) -> void:
 
 
 func _remove_connection(connection: Dictionary) -> void:
-	print(connections.has(connection))
 	connections.erase(connection)
 	update()
 
@@ -656,7 +649,7 @@ func _convert_and_add_connections(conns: Array, ref: Dictionary) -> void:
 func _copy_selected() -> Dictionary:
 	var data = {"nodes": {}, "connections": []}
 	for i in selected_nodes:
-		data.nodes.i.name = i.save_data()
+		data.nodes[i.name] = i.save_data()
 	for conn in connections:
 		if conn.from in data.nodes and conn.to in data.nodes:
 			data.connections.append(conn)
@@ -671,25 +664,33 @@ func _paste_nodes(data) -> void:
 	var conns := []
 	var names := []
 	for i in data.nodes:
-		var node = _create_node_instance(nodes[node_data.type])
+		var node = _create_node_instance(nodes[data.nodes[i].type])
 		names.append(node.name)
 		node_data[node] = data.nodes[i]
-		node_ref[i.name] = node
+		node_ref[i] = node
 	if !node_ref:
 		return
 	for conn in connections:
 		if conn.from.node in names and conn.to.node in names:
 			conns.append(conn)
 	
-	undo.create_action("paste")#we need a ref to convert the basenodenames to the new names
+	undo.create_action("paste")
 	for i in node_ref:
 		var node = node_ref[i]
-		undo.add_do_reference(i)
+		undo.add_do_reference(node)
 		undo.add_do_method(self, "add_child", node, true)
-		undo.add_do_method(i, "load_data", node_data[node])
+		undo.add_do_method(node, "load_data", node_data[node])
 		undo.add_undo_method(self, "remove_child", node)
 	undo.add_do_method(self, "_convert_and_add_connections", conns, node_ref)
 	undo.add_undo_property(self, "connections", connections.duplicate())
+	undo.add_do_method(self, "_translate_nodes", node_ref.values(), Vector2.ONE * 64)
+	undo.add_do_method(self, "_deselect_multiple", selected_nodes.duplicate())
+	undo.add_do_method(self, "_select_multiple", node_ref.values())
+	undo.add_undo_method(self, "_deselect_multiple", node_ref.values())
+	undo.add_undo_method(self, "_select_multiple", selected_nodes.duplicate())
 	undo.commit_action()
-	for i in node_ref:
-		node_ref[i].offset += Vector2.ONE * 64.0
+
+
+func _translate_nodes(nodes: Array, offset: Vector2) -> void:
+	for i in nodes:
+		i.offset += offset
