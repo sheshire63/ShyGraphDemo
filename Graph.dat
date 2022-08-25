@@ -54,7 +54,7 @@
 "ShyGraphNode2": {
 "data": {
 },
-"offset": Vector2( 621.574, 47.385 ),
+"offset": Vector2( 622.574, 31.385 ),
 "slots": [ {
 "active": true,
 "allign": 1,
@@ -77,30 +77,7 @@
 "ShyGraphNode3": {
 "data": {
 },
-"offset": Vector2( 203.939, 199.624 ),
-"slots": [ {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": Vector2( 1, 1 ),
-"type": 0
-}, {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 1,
-"size": Vector2( 1, 1 ),
-"type": 1
-} ],
-"type": "ShyGraphNode"
-},
-"ShyGraphNode4": {
-"data": {
-},
-"offset": Vector2( 267.939, 263.624 ),
+"offset": Vector2( 199.939, 188.624 ),
 "slots": [ {
 "active": true,
 "allign": 1,

@@ -84,6 +84,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
+	draw_string(get_font("font", ""), Vector2.ZERO, name)
 	if selected:
 		draw_style_box(_bg_selected , Rect2(Vector2.ZERO, rect_size))
 	else:

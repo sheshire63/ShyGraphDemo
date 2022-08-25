@@ -574,7 +574,6 @@ func _clear() -> void:
 
 
 func _select_multiple(nodes: Array) -> void:
-	print(nodes)
 	for i in nodes:
 		_select(i)
 
@@ -640,9 +639,9 @@ func _restore_node(node: ShyGraphNode) -> void:
 
 func _convert_and_add_connections(conns: Array, ref: Dictionary) -> void:
 	for i in conns:
-		var new = i.duplicate()
-		new.from.node = ref[i.from.node].name
-		new.to.node = ref[i.to.node].name
+		var new = i.duplicate(true)
+		new.from.node = ref[new.from.node].name
+		new.to.node = ref[new.to.node].name
 		_add_connection(new)
 
 
@@ -662,16 +661,14 @@ func _paste_nodes(data) -> void:
 	var node_data := {}
 	var node_ref := {}
 	var conns := []
-	var names := []
 	for i in data.nodes:
 		var node = _create_node_instance(nodes[data.nodes[i].type])
-		names.append(node.name)
 		node_data[node] = data.nodes[i]
 		node_ref[i] = node
 	if !node_ref:
 		return
 	for conn in connections:
-		if conn.from.node in names and conn.to.node in names:
+		if conn.from.node in node_ref.keys() and conn.to.node in node_ref.keys():
 			conns.append(conn)
 	
 	undo.create_action("paste")
