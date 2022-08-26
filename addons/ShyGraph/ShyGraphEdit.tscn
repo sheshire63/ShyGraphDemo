@@ -10,9 +10,3 @@ mouse_filter = 1
 script = ExtResource( 2 )
 line_type = 1
 types = [  ]
-
-[node name="Nodes" type="PopupMenu" parent="."]
-margin_right = 20.0
-margin_bottom = 20.0
-
-[connection signal="id_pressed" from="Nodes" to="." method="_on_Nodes_id_pressed"]
