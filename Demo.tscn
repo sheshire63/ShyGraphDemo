@@ -13,13 +13,13 @@ script = ExtResource( 4 )
 [node name="ShyGraphEdit" parent="." instance=ExtResource( 2 )]
 types = [ {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [  ], [ 1.0 ], [  ], [  ] ],
+"connections": [ [ 1.0 ], [  ], [  ], [  ] ],
 "multiple": true,
 "name": "in",
 "size": Vector2( 8, 8 )
 }, {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [ 0.0 ], [  ], [  ], [  ] ],
+"connections": [ [  ], [ 0.0 ], [  ], [  ] ],
 "multiple": true,
 "name": "out",
 "size": Vector2( 8, 8 )
@@ -55,6 +55,52 @@ script = ExtResource( 3 )
 data = {
 "connections": [  ],
 "nodes": {
+"ShyGraphNode": {
+"data": {
+},
+"offset": Vector2( 388, 89 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+},
+"ShyGraphNode2": {
+"data": {
+},
+"offset": Vector2( 430, 236 ),
+"slots": [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 0,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 1
+} ],
+"type": "ShyGraphNode"
+}
 }
 }
 

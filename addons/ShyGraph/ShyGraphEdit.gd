@@ -26,7 +26,6 @@ signal node_selected (node)
 signal node_deselected (node)
 
 
-onready var node_menu := $Nodes
 
 export(String, DIR) var node_folder := ""
 var types := [] setget _set_types; func _set_types(new) -> void:
@@ -38,6 +37,7 @@ var types := [] setget _set_types; func _set_types(new) -> void:
 # 		_update_nodes()
 export(line_types) var line_type := line_types.line
 
+var node_menu: PopupMenu
 var nodes := {}
 var connections := []
 var selected_nodes := []
@@ -76,8 +76,10 @@ func _get_property_list() -> Array:
 
 func _ready() -> void:
 	if !owner or (Engine.editor_hint and owner.get_parent() is Viewport):
-		print("editor_only")
+		
 		return
+	node_menu = PopupMenu.new()
+	add_child(node_menu)
 	_load_nodes()
 	connect("transform_changed", self, "_on_transform_changed")
 	undo.connect("version_changed", self, "_on_undo_v_change")
@@ -522,6 +524,8 @@ func _end_select_drag() -> void:
 
 
 func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
+	if from.hash() == to.hash():
+		return false
 	var from_slot = get_node(from.node).get_slot(from.slot)
 	var to_slot = get_node(to.node).get_slot(to.slot)
 	var conns = types[from_slot.type].connections

@@ -13,13 +13,13 @@ script = ExtResource( 3 )
 [node name="ShyGraphEdit" parent="." instance=ExtResource( 2 )]
 types = [ {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [  ], [ 1.0 ], [  ], [  ] ],
+"connections": [ [ 1.0 ], [  ], [  ], [  ] ],
 "multiple": true,
 "name": "Left",
 "size": Vector2( 8, 8 )
 }, {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [ 0.0 ], [  ], [  ], [  ] ],
+"connections": [ [  ], [ 0.0 ], [  ], [  ] ],
 "multiple": true,
 "name": "Right",
 "size": Vector2( 8, 8 )
