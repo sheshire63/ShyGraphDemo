@@ -298,11 +298,11 @@ func add_type(type := {}) -> void:
 func _on_Nodes_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
-	node.offset = position_to_offset(get_local_mouse_position())
 
 	undo.create_action("add_node")
 	undo.add_do_reference(node)
 	undo.add_do_method(self, "add_child", node, true)
+	undo.add_do_property(node, "offset", position_to_offset(get_local_mouse_position()))
 	undo.add_undo_method(self, "remove_child", node)
 	undo.commit_action()
 
