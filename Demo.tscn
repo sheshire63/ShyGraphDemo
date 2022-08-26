@@ -39,6 +39,8 @@ slots = [ {
 "offset": Vector2( 0, 0 ),
 "side": 0,
 "size": Vector2( 1, 1 ),
+"target_node": "",
+"target_slot": 0,
 "type": 0
 }, {
 "active": true,
@@ -47,58 +49,41 @@ slots = [ {
 "offset": Vector2( 0, 0 ),
 "side": 1,
 "size": Vector2( 1, 1 ),
+"target_node": "",
+"target_slot": 0,
 "type": 1
 } ]
 
 [node name="EditorTest2" type="Node" parent="."]
 script = ExtResource( 3 )
 data = {
-"connections": [  ],
+"connections": [ {
+"from": {
+"node": "ShyGraphNode2",
+"slot": 0
+},
+"to": {
+"node": "ShyGraphNode",
+"slot": 1
+}
+} ],
 "nodes": {
 "ShyGraphNode": {
 "data": {
 },
-"offset": Vector2( 388, 89 ),
-"slots": [ {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": Vector2( 1, 1 ),
-"type": 0
-}, {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 1,
-"size": Vector2( 1, 1 ),
-"type": 1
-} ],
+"offset": Vector2( 99.7903, 119.403 ),
 "type": "ShyGraphNode"
 },
 "ShyGraphNode2": {
 "data": {
 },
-"offset": Vector2( 430, 236 ),
-"slots": [ {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": Vector2( 1, 1 ),
-"type": 0
-}, {
-"active": true,
-"allign": 1,
-"anchor": "",
-"offset": Vector2( 0, 0 ),
-"side": 1,
-"size": Vector2( 1, 1 ),
-"type": 1
-} ],
+"offset": Vector2( 330.99, 121.203 ),
+"type": "ShyGraphNode"
+},
+"ShyGraphNode3": {
+"data": {
+},
+"offset": Vector2( 344.489, 204.597 ),
 "type": "ShyGraphNode"
 }
 }

@@ -66,6 +66,7 @@ func _init() -> void:
 func _ready() -> void:
 	if get_parent().has_signal("transform_changed"):
 		get_parent().connect("transform_changed", self, "_on_parent_transform_changed")
+	self.offset = offset
 	_update_theme()
 
 
@@ -97,7 +98,6 @@ func _draw() -> void:
 func save_data() -> Dictionary:
 	return {
 		"type": type,
-		"slots": slots,
 		"offset": offset,
 		"data": _save_data(),
 	}
@@ -106,8 +106,6 @@ func save_data() -> Dictionary:
 func load_data(data:= {}) -> void:
 	if "offset" in data:
 		self.offset = data["offset"]
-	if "slots" in data:
-		self.slots = data["slots"]
 	if "type" in data:
 		self.type = data["type"]
 	if "data" in data:
@@ -143,6 +141,7 @@ func delete() -> void:
 
 
 func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := "", type := 0, allign := 0, side := 0) -> Dictionary:
+	print("mew")
 	return {
 		"active": active,
 		"offset": offset,
@@ -300,7 +299,9 @@ func _clear_slots() -> void:
 func _setup_slots() -> void:
 	for i in slots.size():
 		if !slots[i]:
+			print("new")
 			slots[i] = new_slot()
+			print(slots[i])
 		add_slot_control(slots[i], i)
 
 

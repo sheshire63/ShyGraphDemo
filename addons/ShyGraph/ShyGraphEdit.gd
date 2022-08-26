@@ -37,7 +37,8 @@ var types := [] setget _set_types; func _set_types(new) -> void:
 # 		_update_nodes()
 export(line_types) var line_type := line_types.line
 
-var node_menu: PopupMenu
+var node_menu := PopupMenu.new()
+var _node_menu_from_empty := PopupMenu.new()
 var nodes := {}
 var connections := []
 var selected_nodes := []
@@ -76,10 +77,13 @@ func _get_property_list() -> Array:
 
 func _ready() -> void:
 	if !owner or (Engine.editor_hint and owner.get_parent() is Viewport):
-		
+		#add menu?
 		return
-	node_menu = PopupMenu.new()
+	node_menu.connect("id_pressed", self, "_on_node_menu_id_pressed")
 	add_child(node_menu)
+	_node_menu_from_empty.connect("id_pressed", self, "_node_menu_from_empty_id_pressed")
+	_node_menu_from_empty.connect("popup_hide", self, "_node_menu_from_empty_closed")
+	add_child(_node_menu_from_empty)
 	_load_nodes()
 	connect("transform_changed", self, "_on_transform_changed")
 	undo.connect("version_changed", self, "_on_undo_v_change")
@@ -115,14 +119,18 @@ func _gui_input(event: InputEvent) -> void:
 		if event.is_pressed():
 			match event.button_index:
 				BUTTON_LEFT:
-					_create_connection_from = {}
+					if _create_connection_from:
+						_connect_to_empty()
 					if Input.is_key_pressed(KEY_CONTROL):
 						_break_from = position_to_offset(get_local_mouse_position())
 					else:
 						_start_select_drag()
 					update()
 				BUTTON_RIGHT:
-					node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
+					if _create_connection_from:
+						_create_connection_from = {}
+					else:
+						node_menu.popup(Rect2(event.global_position, node_menu.rect_size))
 		else:
 			if event.button_index == BUTTON_LEFT:
 				if _break_from:
@@ -297,7 +305,7 @@ func add_type(type := {}) -> void:
 
 # events
 
-func _on_Nodes_id_pressed(id:int) -> void:
+func _on_node_menu_id_pressed(id:int) -> void:
 	var node =_create_node_instance(nodes.values()[id])
 	node.type = nodes.keys()[id]
 
@@ -373,9 +381,9 @@ func _on_node_delete(node) -> void:
 func _create_line(connection: Dictionary) -> Dictionary:
 	var from: Dictionary = connection.from
 	var to: Dictionary = connection.to
-	if !has_node(from.node):
-		printerr("node not found: %s"%(from.node))
-		remove_connection(connection.from, connection.to)
+	if !has_node(from.node) or (to and !has_node(to.node)):
+		printerr("node not found: %s"%(from.node if has_node(from.node) else to.node))
+		_remove_connection({"from": connection.from, "to": connection.to})
 		return {"line": [], "colors": []}
 	var from_node = get_node(from.node)
 	var from_pos = from_node.get_slot_offset(from.slot)
@@ -606,7 +614,9 @@ func _add_connection(connection: Dictionary) -> void:
 
 
 func _remove_connection(connection: Dictionary) -> void:
-	connections.erase(connection)
+	for i in connections:
+		if i.hash() == connection.hash():
+			connections.erase(i)
 	update()
 
 
@@ -641,8 +651,10 @@ func _restore_node(node: ShyGraphNode) -> void:
 func _convert_and_add_connections(conns: Array, ref: Dictionary) -> void:
 	for i in conns:
 		var new = i.duplicate(true)
-		new.from.node = ref[new.from.node].name
-		new.to.node = ref[new.to.node].name
+		if new.from.node in ref:
+			new.from.node = ref[new.from.node].name
+		if new.to.node in ref:
+			new.to.node = ref[new.to.node].name
 		_add_connection(new)
 
 
@@ -692,3 +704,58 @@ func _paste_nodes(data) -> void:
 func _translate_nodes(nodes: Array, offset: Vector2) -> void:
 	for i in nodes:
 		i.offset += offset
+
+var _connect_to_empty_data := {}
+func _connect_to_empty() -> void:
+	var _nodes := {}
+	var conns := []
+	for i in nodes:
+		for j in nodes[i].slots.size():
+			var to := {"node": i, "slot": j}
+			if _is_connection_allowed(_create_connection_from, to):
+				_nodes[i] = nodes[i]
+				conns.append(to)
+				break
+	if !_nodes:
+		_create_connection_from = {}
+		update()
+		return
+	_connect_to_empty_data = {
+			"nodes": _nodes,
+			"conns": conns,
+	}
+	_node_menu_from_empty.clear()
+	for i in _nodes:
+		_node_menu_from_empty.add_item(i)
+	_node_menu_from_empty.popup(Rect2(get_global_mouse_position(), _node_menu_from_empty.rect_size))
+
+	#check for each node in nodes if it has a valid slot
+		#if true add to a popupmenu
+
+
+func _node_menu_from_empty_id_pressed(id: int) -> void:
+	#todo fix its connects to itself
+	#	and nodes created via this work like intended
+	#		we cant use the node name because the from node may have that name
+	undo.create_action("add_node")
+	var conn = {
+			"from": _create_connection_from,
+			"to": {
+				"node": "",
+				"slot": _connect_to_empty_data.conns[id].slot,
+				},
+			}
+	var new = _create_node_instance(_connect_to_empty_data.nodes.values()[id])
+	new.type = _connect_to_empty_data.nodes.keys()[id]
+	new.offset = position_to_offset(get_local_mouse_position())
+	undo.add_do_reference(new)
+	undo.add_do_method(self, "add_child", new)
+	undo.add_undo_method(self, "remove_child", new)
+	undo.add_do_method(self, "_convert_and_add_connections", [conn], {"": new})
+	undo.add_undo_property(self, "connections", connections.duplicate())
+	undo.commit_action()
+
+
+func _node_menu_from_empty_closed() -> void:
+	_create_connection_from = {}
+	update()
