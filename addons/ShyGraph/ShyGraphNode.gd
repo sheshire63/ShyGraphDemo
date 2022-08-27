@@ -322,7 +322,7 @@ func _setup_slots() -> void:
 			print("new")
 			slots[i] = new_slot()
 			print(slots[i])
-		add_slot_control(slots[i], i)
+		_add_slot_control(slots[i], i)
 
 
 func _update_position() -> void:
