@@ -314,6 +314,9 @@ func _clear_slots() -> void:
 		_slot_controls[i].queue_free()
 	_slot_controls = {}
 	slots = []
+	for i in get_children():
+		if i is SlotButton:
+			i.queue_free()
 
 
 func _setup_slots() -> void:

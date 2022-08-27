@@ -477,7 +477,7 @@ func _end_drag(to := {}) -> void:
 
 func _create_node_instance(node) -> ShyGraphNode:
 	if node is Node:
-		node = node.duplicate(7)
+		node = node.duplicate(4)
 	elif node is PackedScene:
 		node = node.instance()
 	elif node is Script:

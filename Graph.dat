@@ -4,7 +4,25 @@
 "ShyGraphNode": {
 "data": {
 },
-"offset": Vector2( 30, -150 ),
+"offset": Vector2( -112, -136 ),
+"type": "ShyGraphNode"
+},
+"ShyGraphNode16": {
+"data": {
+},
+"offset": Vector2( 12, 8 ),
+"type": "ShyGraphNode"
+},
+"ShyGraphNode2": {
+"data": {
+},
+"offset": Vector2( 101, -79 ),
+"type": "ShyGraphNode"
+},
+"ShyGraphNode3": {
+"data": {
+},
+"offset": Vector2( 140, 35 ),
 "type": "ShyGraphNode"
 }
 }
