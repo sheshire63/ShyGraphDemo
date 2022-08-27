@@ -140,7 +140,7 @@ func delete() -> void:
 #slot functions----------------------------------------------------
 
 
-func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := "", type := 0, allign := 0, side := 0) -> Dictionary:
+func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := "", type := 0, allign := 1, side := 0) -> Dictionary:
 	print("mew")
 	return {
 		"active": active,
@@ -157,7 +157,7 @@ func add_slot(slot := {}) -> void:
 	if !slot:
 		slot = new_slot()
 	slots.append(slot)
-	add_slot_control(slot, slots.size() - 1)
+	_add_slot_control(slot, slots.size() - 1)
 	emit_signal("slot_added", slot, slots.size() - 1)
 
 
@@ -166,26 +166,12 @@ func remove_slot(slot:= 0) -> void:
 		return
 	var old = slots[slot]
 	slots.remove(slot)
-	remove_slot_control(slot)
+	_remove_slot_control(slot)
 	emit_signal("slot_removed", old)
 
 
 func get_slot_offset(slot_index: int) -> Vector2:
 	return _get_slot_offset(slots[slot_index]) + offset
-
-
-func add_slot_control(slot: Dictionary, index: int) -> SlotButton:
-	var control = SlotButton.new(index)
-	add_child(control)
-	control.slot = slot
-	_slot_controls[slots.find(slot)] = control
-	return control
-
-
-func remove_slot_control(slot: int) -> void:
-	remove_child(_slot_controls[slot])
-	_slot_controls[slot].queue_free()
-	_slot_controls.erase(slot)
 
 
 func update_slot(slot: Dictionary) -> void:
@@ -199,6 +185,34 @@ func get_slot(id: int) -> Dictionary:
 	if slots.size() > id:
 		return slots[id]
 	return {}
+
+
+func set_slot_enabled(slot: int, enabled: bool) -> void:
+	slots[slot].active = enabled
+
+
+func set_slot_offset(slot: int, offset: Vector2) -> void:
+	slots[slot].offset = offset
+
+
+func set_slot_size(slot: int, size: Vector2) -> void:
+	slots[slot].size = size
+
+
+func set_slot_anchor(slot: int, node: NodePath) -> void:
+	slots[slot].anchor = node
+
+
+func set_slot_type(slot: int, type: int) -> void:
+	slots[slot].type = type
+
+
+func set_slot_allign(slot: int, allign: int) -> void:
+	slots[slot].allign = allign
+
+
+func set_slot_side(slot: int, side: int) -> void:
+	slots[slot].side = side
 
 
 #virtual----------------------------------------------------
@@ -336,3 +350,17 @@ func _move(amount:Vector2) -> void:
 func _on_parent_transform_changed(transform: Transform2D) -> void:
 	_update_position()
 	rect_scale = Vector2.ONE / transform.get_scale()
+
+
+func _add_slot_control(slot: Dictionary, index: int) -> SlotButton:
+	var control = SlotButton.new(index)
+	add_child(control)
+	control.slot = slot
+	_slot_controls[slots.find(slot)] = control
+	return control
+
+
+func _remove_slot_control(slot: int) -> void:
+	remove_child(_slot_controls[slot])
+	_slot_controls[slot].queue_free()
+	_slot_controls.erase(slot)
