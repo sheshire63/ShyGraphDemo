@@ -189,30 +189,36 @@ func get_slot(id: int) -> Dictionary:
 
 func set_slot_enabled(slot: int, enabled: bool) -> void:
 	slots[slot].active = enabled
+	update()
 
 
 func set_slot_offset(slot: int, offset: Vector2) -> void:
 	slots[slot].offset = offset
-
+	update()
 
 func set_slot_size(slot: int, size: Vector2) -> void:
 	slots[slot].size = size
+	update()
 
 
 func set_slot_anchor(slot: int, node: NodePath) -> void:
 	slots[slot].anchor = node
+	update()
 
 
 func set_slot_type(slot: int, type: int) -> void:
 	slots[slot].type = type
+	update()
 
 
 func set_slot_allign(slot: int, allign: int) -> void:
 	slots[slot].allign = allign
+	update()
 
 
 func set_slot_side(slot: int, side: int) -> void:
 	slots[slot].side = side
+	update()
 
 
 #virtual----------------------------------------------------
