@@ -34,11 +34,9 @@ types = [ {
 [node name="ShyGraphNode" type="Control" parent="ShyGraphEdit"]
 margin_right = 64.0
 margin_bottom = 64.0
-rect_min_size = Vector2( 64, 64 )
+rect_min_size = Vector2( 82, 64 )
 script = ExtResource( 1 )
-has_titel_bar = false
-close = null
-edit_title = null
+edit_title = false
 slots = [ {
 "active": true,
 "allign": 1,

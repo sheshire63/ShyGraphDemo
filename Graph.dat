@@ -1,16 +1,19 @@
 {
-"connections": [  ],
+"connections": [ {
+"from": {
+"node": "ShyGraphNode16",
+"slot": 1
+},
+"to": {
+"node": "ShyGraphNode2",
+"slot": 0
+}
+} ],
 "nodes": {
-"ShyGraphNode": {
-"data": {
-},
-"offset": Vector2( -112, -136 ),
-"type": "ShyGraphNode"
-},
 "ShyGraphNode16": {
 "data": {
 },
-"offset": Vector2( 12, 8 ),
+"offset": Vector2( -209, -4.00002 ),
 "type": "ShyGraphNode"
 },
 "ShyGraphNode2": {

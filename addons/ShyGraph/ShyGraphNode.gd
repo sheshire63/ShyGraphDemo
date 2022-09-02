@@ -41,6 +41,7 @@ var _slot_controls := {}
 var _is_moving := false
 var _moved_from: Vector2
 var _resize_button: Button
+var _titel_offset := 0.0
 
 #theme
 var _background: StyleBox
@@ -113,9 +114,9 @@ func _notification(what: int) -> void:
 func _draw() -> void:
 	#draw_string(get_font("font", ""), Vector2.ZERO, name)
 	if selected:
-		draw_style_box(_bg_selected , Rect2(Vector2.ZERO, rect_size))
+		draw_style_box(_bg_selected , Rect2(Vector2(0, -_titel_offset), rect_size + Vector2(0, _titel_offset)))
 	else:
-		draw_style_box(_background, Rect2(Vector2.ZERO, rect_size))
+		draw_style_box(_background, Rect2(Vector2(0, -_titel_offset), rect_size + Vector2(0, _titel_offset)))
 
 
 
@@ -434,17 +435,18 @@ func _add_titel_bar() -> void:
 		control.connect("text_changed", self, "_on_titel_changed", [control])
 	else:
 		control = Label.new()
+		control.mouse_filter = MOUSE_FILTER_PASS
 	control.text = name
 	add_child(control)
 
 	rect_min_size.x = max(rect_min_size.x, control.rect_size.x + close_button.rect_size.x)
 
-	var titel_heigt = max(control.rect_size.y, close_button.rect_size.y)
+	_titel_offset = max(control.rect_size.y, close_button.rect_size.y)
 	close_button.set_anchors_preset(PRESET_TOP_RIGHT)
-	close_button.margin_top = -titel_heigt
+	close_button.margin_top = -_titel_offset
 	close_button.margin_left = -close_button.rect_size.x
 	control.set_anchors_preset(PRESET_TOP_WIDE)
-	control.margin_top = -titel_heigt
+	control.margin_top = -_titel_offset
 	control.margin_right = -close_button.rect_size.x
 
 
