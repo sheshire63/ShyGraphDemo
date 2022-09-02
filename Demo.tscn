@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://addons/ShyGraph/ShyGraphNode.gd" type="Script" id=1]
-[ext_resource path="res://addons/ShyGraph/ShyGraphEdit.tscn" type="PackedScene" id=2]
+[ext_resource path="res://addons/ShyGraph/ShyGraphEdit.gd" type="Script" id=2]
 [ext_resource path="res://EditorTest.gd" type="Script" id=3]
 [ext_resource path="res://Demo.gd" type="Script" id=4]
 
@@ -10,7 +10,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 4 )
 
-[node name="ShyGraphEdit" parent="." instance=ExtResource( 2 )]
+[node name="ShyGraphEdit" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_clip_content = true
+mouse_filter = 1
+script = ExtResource( 2 )
+line_type = 1
 types = [ {
 "color": Color( 1, 1, 1, 1 ),
 "connections": [ [ 1.0 ], [  ], [  ], [  ] ],
@@ -26,12 +32,13 @@ types = [ {
 } ]
 
 [node name="ShyGraphNode" type="Control" parent="ShyGraphEdit"]
-margin_left = 512.0
-margin_top = 300.0
-margin_right = 576.0
-margin_bottom = 364.0
+margin_right = 64.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 64, 64 )
 script = ExtResource( 1 )
+has_titel_bar = false
+close = null
+edit_title = null
 slots = [ {
 "active": true,
 "allign": 1,
@@ -71,7 +78,7 @@ data = {
 "ShyGraphNode": {
 "data": {
 },
-"offset": Vector2( 99.7903, 119.403 ),
+"offset": Vector2( 24.7903, 139.403 ),
 "type": "ShyGraphNode"
 },
 "ShyGraphNode2": {
@@ -83,7 +90,7 @@ data = {
 "ShyGraphNode3": {
 "data": {
 },
-"offset": Vector2( 344.489, 204.597 ),
+"offset": Vector2( 177.489, 267.597 ),
 "type": "ShyGraphNode"
 }
 }

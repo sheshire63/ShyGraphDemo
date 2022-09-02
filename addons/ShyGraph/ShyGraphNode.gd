@@ -20,6 +20,11 @@ enum ALLIGN {BEGIN, CENTER, END}
 enum SIDE {LEFT, RIGHT, TOP, BOTTOM}
 
 
+export var titel_bar := true
+export var close := true
+export var edit_title := true
+export var resize := true
+
 var offset := Vector2.ZERO setget _set_offset; func _set_offset(new):
 		offset = new
 		_update_position()
@@ -35,10 +40,13 @@ var selected := false setget _set_selected
 var _slot_controls := {}
 var _is_moving := false
 var _moved_from: Vector2
+var _resize_button: Button
 
 #theme
 var _background: StyleBox
 var _bg_selected: StyleBox
+var _close_icon: Texture
+var _resize_icon: Texture
 
 
 # flow
@@ -68,6 +76,17 @@ func _ready() -> void:
 		get_parent().connect("transform_changed", self, "_on_parent_transform_changed")
 	self.offset = offset
 	_update_theme()
+	if titel_bar:
+		_add_titel_bar()
+	if resize:
+		_add_resize_button()
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		if _resize_button and _resize_button.pressed:
+			rect_min_size += event.relative
+			update()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -82,6 +101,13 @@ func _gui_input(event: InputEvent) -> void:
 						emit_signal("_request_select", self)
 				else:
 					_end_move()
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_RESIZED:
+			for i in _slot_controls:
+				_slot_controls[i].update_position()
 
 
 func _draw() -> void:
@@ -240,6 +266,13 @@ func _copy(copy) -> void:#if you need to set somthing in the copy.
 	pass
 
 
+# events
+
+func _on_titel_changed(text: String, sender) -> void:
+	name = text
+	sender.text = name
+
+
 # private funcs----------------------------------------------------
 
 
@@ -258,7 +291,9 @@ func _set_selected(new: bool) -> void:
 	# 		modulate = Color(1, 1, 1)
 
 
-func _get_slot_offset(slot: Dictionary) -> Vector2:
+func _get_slot_offset(slot: Dictionary) -> Vector2: 
+#todo use anchor on slot button and use slotbutton positon to get the offset
+	#it canot be clearyly defined with anchors alone because we might anchor it to a child
 	var anchor_rect
 	if slot.anchor:
 		if has_node(slot.anchor):
@@ -306,6 +341,14 @@ func _update_theme() -> void:
 	else:
 		_bg_selected = StyleBoxFlat.new()
 		_bg_selected.bg_color = Color(0.3,0.3,0.3)
+	if has_icon("close", ""):
+		_close_icon = get_icon("close", "")
+	else:
+		_close_icon = get_icon("close", "GraphNode")
+	if has_icon("resize", ""):
+		_resize_icon = get_icon("resize", "")
+	else:
+		_resize_icon = get_icon("resizer", "GraphNode")
 
 
 func _clear_slots() -> void:
@@ -373,3 +416,43 @@ func _remove_slot_control(slot: int) -> void:
 	remove_child(_slot_controls[slot])
 	_slot_controls[slot].queue_free()
 	_slot_controls.erase(slot)
+
+
+func _add_titel_bar() -> void:
+	var close_button
+	if close:
+		close_button = Button.new()
+		close_button.icon = _close_icon
+		close_button.connect("pressed", self, "delete")
+	else:
+		close_button = Control.new()
+	add_child(close_button)
+
+	var control
+	if edit_title:
+		control = LineEdit.new()
+		control.connect("text_changed", self, "_on_titel_changed", [control])
+	else:
+		control = Label.new()
+	control.text = name
+	add_child(control)
+
+	rect_min_size.x = max(rect_min_size.x, control.rect_size.x + close_button.rect_size.x)
+
+	var titel_heigt = max(control.rect_size.y, close_button.rect_size.y)
+	close_button.set_anchors_preset(PRESET_TOP_RIGHT)
+	close_button.margin_top = -titel_heigt
+	close_button.margin_left = -close_button.rect_size.x
+	control.set_anchors_preset(PRESET_TOP_WIDE)
+	control.margin_top = -titel_heigt
+	control.margin_right = -close_button.rect_size.x
+
+
+func _add_resize_button() -> void:
+	_resize_button = Button.new()
+	_resize_button.flat = true
+	_resize_button.icon = _resize_icon
+	_resize_button.set_anchors_preset(PRESET_BOTTOM_RIGHT)
+	add_child(_resize_button)
+	_resize_button.margin_top = -_resize_button.rect_size.y
+	_resize_button.margin_left = -_resize_button.rect_size.x
