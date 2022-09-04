@@ -7,6 +7,7 @@ var path
 var sub_control
 var value_property
 var object_property
+var label_property
 
 var box := VBoxContainer.new()
 var control := SpinBox.new()
@@ -20,6 +21,7 @@ func _init(_object, _path, _sub_control, _value_property, _object_property) -> v
 	sub_control = _sub_control
 	value_property = _value_property
 	object_property = _object_property
+	#label_property = _label_property
 
 
 func _ready() -> void:
@@ -43,13 +45,8 @@ func _on_value_changed(new: float) -> void:
 func update_property() -> void:
 	updating = true
 	var new = get_edited_object()[get_edited_property()]
-	if new.size() == value.size():
-		value = new
-		setup()
-	else:
-		value = new
-		for i in value.size():
-			box.get_child(i)[value_property] = value[i]
+	value = new
+	setup()
 	updating = false
 
 
@@ -73,6 +70,7 @@ func clear() -> void:
 
 func _on_changed() -> void:
 	emit_changed(get_edited_property(), value, "", true)
+
 
 # func get_tooltip_text() -> String:
 # 	return ""

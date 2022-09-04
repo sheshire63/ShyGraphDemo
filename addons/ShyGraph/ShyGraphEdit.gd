@@ -254,13 +254,13 @@ func get_type_size(type: int) -> Vector2:
 	return types[type].size
 
 
-func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), multiple:= true, connections := [[], [], [], []]) -> Dictionary:
+func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), multiple:= true, connections := []) -> Dictionary:
 	return {
 		"name": label,
 		"color": color,
 		"size": size,
 		"multiple": multiple,
-		"connections": connections
+		"connections": connections,
 		}
 
 
@@ -327,15 +327,12 @@ func _on_undo_v_change() -> void:
 # node events
 
 func _on_node_moved(amount: Vector2, node: ShyGraphNode) -> void:
-	var rect = area_rect
-	rect = rect.expand(node.offset)
-	rect = rect.expand(node.offset + node.rect_size)
+	var rect = _include_node_in_rect(node, area_rect)
 	for i in selected_nodes:
 		if i == node:
 			continue
 		i.offset += amount
-		rect = rect.expand(i.offset)
-		rect = rect.expand(i.offset + i.rect_size)
+		rect = _include_node_in_rect(i, rect)
 	update()
 	emit_signal("nodes_moved", selected_nodes)
 	self.area_rect = rect
@@ -374,6 +371,9 @@ func _on_node_delete(node) -> void:
 	_delete_node(node)
 	emit_signal("node_removed", node)
 
+
+func _on_node_offset_changed(_offset, node) -> void:
+	self.area_rect = _include_node_in_rect(node, area_rect)
 
 
 # private
@@ -488,6 +488,7 @@ func _create_node_instance(node) -> ShyGraphNode:
 		node = ShyGraphNode.new()
 	node.rect_scale = Vector2.ONE / transform.get_scale()
 	node.connect("moved", self, "_on_node_moved", [node])
+	node.connect("offset_changed", self, "_on_node_offset_changed", [node])
 	node.connect("moved_to", self, "_on_node_moved_to", [node])
 	node.connect("selected", self, "_on_node_selected", [node])
 	node.connect("deselected", self, "_on_node_deselected", [node])
@@ -537,10 +538,10 @@ func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
 	var from_slot = get_node(from.node).get_slot(from.slot)
 	var to_slot = get_node(to.node).get_slot(to.slot)
 	var conns = types[from_slot.type].connections
-	if to_slot.type in conns[from_slot.side]:
+	if to_slot.type in conns:
 		return true
 	conns = types[to_slot.type].connections
-	if from_slot.type in conns[to_slot.side]:
+	if from_slot.type in conns:
 		return true
 	return false
 
@@ -759,3 +760,9 @@ func _node_menu_from_empty_id_pressed(id: int) -> void:
 func _node_menu_from_empty_closed() -> void:
 	_create_connection_from = {}
 	update()
+
+
+func _include_node_in_rect(node:ShyGraphNode, rect: Rect2) -> Rect2:
+	rect = rect.expand(node.offset)
+	rect = rect.expand(node.offset + node.rect_size)
+	return rect

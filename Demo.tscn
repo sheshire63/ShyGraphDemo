@@ -19,22 +19,22 @@ script = ExtResource( 2 )
 line_type = 1
 types = [ {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [ 1.0 ], [  ], [  ], [  ] ],
+"connections": [  ],
 "multiple": true,
-"name": "in",
+"name": "Holl",
 "size": Vector2( 8, 8 )
 }, {
 "color": Color( 1, 1, 1, 1 ),
-"connections": [ [  ], [ 0.0 ], [  ], [  ] ],
+"connections": [  ],
 "multiple": true,
-"name": "out",
+"name": "Out",
 "size": Vector2( 8, 8 )
 } ]
 
 [node name="ShyGraphNode" type="Control" parent="ShyGraphEdit"]
-margin_right = 64.0
+margin_right = 118.0
 margin_bottom = 64.0
-rect_min_size = Vector2( 82, 64 )
+rect_min_size = Vector2( 118, 64 )
 script = ExtResource( 1 )
 edit_title = false
 slots = [ {

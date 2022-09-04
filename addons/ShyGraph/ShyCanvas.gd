@@ -30,8 +30,10 @@ var transform := Transform2D.IDENTITY setget _set_offset; func _set_offset(new) 
 		update()
 var area_rect := Rect2() setget _set_area_rect; func _set_area_rect(new) -> void:
 		if new != area_rect:
+			printt(area_rect, new)
 			area_rect = new
 			_update_bars()
+			update()
 			emit_signal("area_rect_changed")
 var bar_h: ScrollBar
 var bar_v: ScrollBar
@@ -89,8 +91,8 @@ func _draw() -> void:
 	_draw_grid()
 	if ruler:
 		_draw_ruler()
-	# draw_set_transform_matrix(transform.affine_inverse())
-	# draw_rect(area_rect, Color.green, false)
+	#draw_set_transform_matrix(transform.affine_inverse())
+	#draw_rect(area_rect, Color.green, false)
 
 
 # puplic
