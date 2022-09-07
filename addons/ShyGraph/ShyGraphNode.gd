@@ -43,12 +43,6 @@ var _moved_from: Vector2
 var _resize_button: Button
 var _titel_offset := 0.0
 
-#theme
-var _background: StyleBox
-var _bg_selected: StyleBox
-var _close_icon: Texture
-var _resize_icon: Texture
-
 
 # flow
 
@@ -76,7 +70,6 @@ func _ready() -> void:
 	if get_parent().has_signal("transform_changed"):
 		get_parent().connect("transform_changed", self, "_on_parent_transform_changed")
 	self.offset = offset
-	_update_theme()
 	if titel_bar:
 		_add_titel_bar()
 	if resize:
@@ -114,9 +107,9 @@ func _notification(what: int) -> void:
 func _draw() -> void:
 	#draw_string(get_font("font", ""), Vector2.ZERO, name)
 	if selected:
-		draw_style_box(_bg_selected , Rect2(Vector2(0, -_titel_offset), rect_size + Vector2(0, _titel_offset)))
+		draw_style_box(_get_bg_selected() , Rect2(Vector2(0, -_titel_offset), rect_size + Vector2(0, _titel_offset)))
 	else:
-		draw_style_box(_background, Rect2(Vector2(0, -_titel_offset), rect_size + Vector2(0, _titel_offset)))
+		draw_style_box(_get_background(), Rect2(Vector2(0, -_titel_offset), rect_size + Vector2(0, _titel_offset)))
 
 
 
@@ -331,27 +324,6 @@ func _get_slot_offset(slot: Dictionary) -> Vector2:
 	return res + slot.offset
 
 
-func _update_theme() -> void:
-	if has_stylebox("background", ""):
-		_background = get_stylebox("background", "")
-	else:
-		_background = StyleBoxFlat.new()
-		_background.bg_color = Color(0.2,0.2,0.2)
-	if has_stylebox("background_selected", ""):
-		_bg_selected = get_stylebox("background_selected", "")
-	else:
-		_bg_selected = StyleBoxFlat.new()
-		_bg_selected.bg_color = Color(0.3,0.3,0.3)
-	if has_icon("close", ""):
-		_close_icon = get_icon("close", "")
-	else:
-		_close_icon = get_icon("close", "GraphNode")
-	if has_icon("resize", ""):
-		_resize_icon = get_icon("resize", "")
-	else:
-		_resize_icon = get_icon("resizer", "GraphNode")
-
-
 func _clear_slots() -> void:
 	for i in _slot_controls:
 		remove_child(_slot_controls[i])
@@ -423,7 +395,7 @@ func _add_titel_bar() -> void:
 	var close_button
 	if close:
 		close_button = Button.new()
-		close_button.icon = _close_icon
+		close_button.icon = _get_close_icon()
 		close_button.connect("pressed", self, "delete")
 	else:
 		close_button = Control.new()
@@ -453,8 +425,36 @@ func _add_titel_bar() -> void:
 func _add_resize_button() -> void:
 	_resize_button = Button.new()
 	_resize_button.flat = true
-	_resize_button.icon = _resize_icon
+	_resize_button.icon = _get_resize_icon()
 	_resize_button.set_anchors_preset(PRESET_BOTTOM_RIGHT)
 	add_child(_resize_button)
 	_resize_button.margin_top = -_resize_button.rect_size.y
 	_resize_button.margin_left = -_resize_button.rect_size.x
+
+
+
+# theme
+
+func _get_background() -> StyleBox:
+	if has_stylebox("background", ""):
+		return get_stylebox("background", "")
+	var bg = StyleBoxFlat.new()
+	bg.bg_color = Color(0.2,0.2,0.2)
+	return bg
+
+func _get_bg_selected() -> StyleBox:
+	if has_stylebox("background_selected", ""):
+		return get_stylebox("background_selected", "")
+	var bg_selected = StyleBoxFlat.new()
+	bg_selected.bg_color = Color(0.3,0.3,0.3)
+	return bg_selected
+
+func _get_close_icon() -> Texture:
+	if has_icon("close", ""):
+		return get_icon("close", "")
+	return get_icon("close", "GraphNode")
+
+func _get_resize_icon() -> Texture:
+	if has_icon("resize", ""):
+		return get_icon("resize", "")
+	return get_icon("resizer", "GraphNode")

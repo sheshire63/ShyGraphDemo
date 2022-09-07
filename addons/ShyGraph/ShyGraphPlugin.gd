@@ -149,7 +149,7 @@ func save_nodes_to_folder() -> void:
 func create_new_nodetype(name: String, add_script: bool) -> void:# todo add undo
 	var new = ShyGraphNode.new()
 	new.name = name
-	object.add_child(new, true)
+	object.add_node_at_center(new)
 	new.owner = object.owner
 	if add_script:
 		var node_folder = object.node_folder

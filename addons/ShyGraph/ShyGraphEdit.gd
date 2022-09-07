@@ -49,15 +49,6 @@ var _select_from : Vector2
 var _copy_data: Dictionary
 var _node_menu_from_empty := PopupMenu.new()
 
-#theme
-var _break_line_color := Color.red
-var _break_line_width := 1
-var _line_width := 5
-var _selection_fill_color := Color(0.5, 0.5, 0.5, 0.5)
-var _selection_stroke_color := Color.gray
-var _selection_stroke_width := 1.0
-
-
 
 func _get_property_list() -> Array:
 	var list := [
@@ -145,10 +136,11 @@ func _draw() -> void:
 	_draw_connections()
 	_draw_create_connection()
 	if _break_from:
-		draw_line(_break_from, position_to_offset(get_local_mouse_position()), _break_line_color, _break_line_width)
+		draw_line(_break_from, position_to_offset(get_local_mouse_position()), _get_break_line_color(), _get_break_line_width())
 	if _select_from:
-		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), _selection_fill_color)
-		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), _selection_stroke_color, false, _selection_stroke_width)
+		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), _get_selection_fill_color())
+		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from),
+				_get_selection_stroke_color(), false, _get_selection_stroke_width())
 
 
 
@@ -262,6 +254,11 @@ func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), mult
 		"multiple": multiple,
 		"connections": connections,
 		}
+
+
+func add_node_at_center(node: ShyGraphNode) -> void:
+	add_child(node, true)
+	node.offset = position_to_offset(rect_size/2)
 
 
 #get slot from node
@@ -431,7 +428,7 @@ func _create_line(connection: Dictionary) -> Dictionary:
 func _draw_connections() -> void:
 	for i in connections:
 		var line_data = _create_line(i)
-		draw_polyline_colors(line_data.line, line_data.colors, _line_width)
+		draw_polyline_colors(line_data.line, line_data.colors, _get_line_width())
 
 
 func _draw_create_connection() -> void:
@@ -560,22 +557,6 @@ func _disconnect_slot(node: String, slot: int) -> void:
 		else:
 			continue
 		emit_signal("disconnected", connection.from, connection.to)
-
-
-func _update_theme() -> void:
-	._update_theme()
-	if has_color("break_line_color", ""):
-		_break_line_color = get_color("break_line_color", "")
-	if has_constant("break_line_width", ""):
-		_break_line_width = get_constant("break_line_width", "")
-	if has_constant("line_width", ""):
-		_line_width = get_constant("line_width", "")
-	if has_color("selection_fill_color", ""):
-		_selection_fill_color = get_color("selection_fill_color", "")
-	if has_color("selection_stroke_color", ""):
-		_selection_stroke_color = get_color("selection_stroke_color", "")
-	if has_constant("selection_stroke_width", ""):
-		_selection_stroke_width = get_constant("selection_stroke_width", "")
 
 
 func _clear() -> void:
@@ -773,3 +754,33 @@ func _include_node_in_rect(node:ShyGraphNode, rect: Rect2) -> Rect2:
 	return rect
 
 
+#theme
+func _get_break_line_color() -> Color:
+	if has_color("break_line_color", ""):
+		return get_color("break_line_color", "")
+	return Color.red
+
+func _get_line_width() -> int:
+	if has_constant("line_width", ""):
+		return get_constant("line_width", "")
+	return 5
+
+func _get_break_line_width() -> int:
+	if has_constant("break_line_width", ""):
+		return get_constant("break_line_width", "")
+	return 1
+
+func _get_selection_fill_color() -> Color:
+	if has_color("selection_fill_color", ""):
+		return get_color("selection_fill_color", "")
+	return Color(0.5, 0.5, 0.5, 0.5)
+
+func _get_selection_stroke_color() -> Color:
+	if has_color("selection_stroke_color", ""):
+		return get_color("selection_stroke_color", "")
+	return Color.gray
+
+func _get_selection_stroke_width() -> int:
+	if has_constant("selection_stroke_width", ""):
+		return get_constant("selection_stroke_width", "")
+	return 1

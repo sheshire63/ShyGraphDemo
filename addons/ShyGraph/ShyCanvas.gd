@@ -39,29 +39,10 @@ var bar_h: ScrollBar
 var bar_v: ScrollBar
 var undo := UndoRedo.new()
 
-# theme settings
-var background: StyleBox
-var grid_step := 128
-var grid_substeps := 1
-var max_scale := 1000
-var min_scale := 10# in procent
-var grid_major_line_width := 2
-var grid_minor_line_width := 1
-var grid_major_line_color := Color.gray
-var grid_minor_line_color := Color.darkgray
-var ruler_width := 16
-var ruler_font: Font
-var ruler_font_color := Color.white
-var ruler_line_color := Color.white
-var ruler_line_width := 1
-var ruler_step := 128
-
-
 
 # flow
 
 func _ready() -> void:
-	_update_theme()
 	if scroll_bar:
 		_add_scrooll_bars()
 	
@@ -87,7 +68,7 @@ func _unhandled_key_input(event: InputEventKey) -> void:
 
 
 func _draw() -> void:
-	draw_style_box(background, Rect2(Vector2.ZERO, rect_size))
+	draw_style_box(_get_background(), Rect2(Vector2.ZERO, rect_size))
 	_draw_grid()
 	if ruler:
 		_draw_ruler()
@@ -144,13 +125,6 @@ func _update() -> void:
 func _on_transform_changed(_transform: Transform2D) -> void:
 	pass
 
-#set
-
-func set_theme(new) -> void:
-	theme = new
-	_update_theme()
-
-
 
 # events
 
@@ -183,84 +157,55 @@ func _update_bar_pos() -> void:
 
 
 func _draw_grid() -> void:
-	var offset: float = ruler_width if ruler else 0.0
+	var offset: float = _get_ruler_width() if ruler else 0.0
 	var from: Vector2 = position_to_offset(offset * Vector2.ONE)
 	var to: Vector2 = position_to_offset(rect_size)
-	var step = (grid_step / (grid_substeps + 1)) * Vector2.ONE
+	var step = (_get_grid_step() / (_get_grid_substeps() + 1)) * Vector2.ONE
 	var pos: Vector2 = from.snapped(step)
 	draw_set_transform_matrix(transform.affine_inverse())
 	while pos.x <= to.x or pos.y <= to.y:
 		if pos.x >= from.x and pos.x <= to.x:
-			var line_width := grid_minor_line_width
-			var color := grid_minor_line_color
-			if int(pos.x) % grid_step == 0:
-				line_width = grid_major_line_width
-				color = grid_major_line_color
+			var line_width := _get_grid_minor_line_width()
+			var color := _get_grid_minor_line_color()
+			if int(pos.x) % _get_grid_step() == 0:
+				line_width = _get_grid_major_line_width()
+				color = _get_grid_major_line_color()
 			draw_line(Vector2(pos.x, from.y), Vector2(pos.x, to.y), color, position_to_offset(line_width))
 		if pos.y >= from.y and pos.y <= to.y:
-			var line_width := grid_minor_line_width
-			var color := grid_minor_line_color
-			if int(pos.y) % grid_step == 0:
-				line_width = grid_major_line_width
-				color = grid_major_line_color
+			var line_width := _get_grid_minor_line_width()
+			var color := _get_grid_minor_line_color()
+			if int(pos.y) % _get_grid_step() == 0:
+				line_width = _get_grid_major_line_width()
+				color = _get_grid_major_line_color()
 			draw_line(Vector2(from.x, pos.y), Vector2(to.x, pos.y), color, position_to_offset(line_width))
 		pos += step
 	draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
 func _draw_ruler() -> void:
-	var from: Vector2 = position_to_offset(Vector2.ONE * ruler_width)
+	var from: Vector2 = position_to_offset(Vector2.ONE * _get_ruler_width())
 	var to: Vector2 = position_to_offset(rect_size)
-	var step = grid_step / (grid_substeps + 1) * Vector2.ONE
+	var step = _get_grid_step() / (_get_grid_substeps() + 1) * Vector2.ONE
 	var pos: Vector2 = from.snapped(step)
 	while pos.x <= to.x:
 		if pos.x > from.x:
 			var point = offset_to_position(pos)
-			if int(pos.x) % grid_step == 0:
-				draw_string(ruler_font, Vector2(point.x, ruler_width), str(int(pos.x)), ruler_font_color)
-			draw_line(Vector2(point.x, 0), Vector2(point.x, ruler_width), ruler_line_color, ruler_line_width)
+			if int(pos.x) % _get_grid_step() == 0:
+				draw_string(_get_ruler_font(), Vector2(point.x, _get_ruler_width()), str(int(pos.x)), _get_ruler_font_color())
+			draw_line(Vector2(point.x, 0), Vector2(point.x, _get_ruler_width()), _get_ruler_line_color(), _get_ruler_line_width())
 		pos.x += step.x
-	draw_line(Vector2.ONE * ruler_width, Vector2(rect_size.x, ruler_width), ruler_line_color, 2.0)
+	draw_line(Vector2.ONE * _get_ruler_width(), Vector2(rect_size.x, _get_ruler_width()), _get_ruler_line_color(), 2.0)
 	var tf = Transform2D(PI/2, Vector2.ZERO)
 	draw_set_transform_matrix(tf.affine_inverse())
 	while pos.y <= to.y:
 		if pos.y > from.y:
 			var point = offset_to_position(pos)
-			if int(pos.y) % grid_step == 0:
-				draw_string(ruler_font, tf.xform(Vector2(ruler_width, point.y)), str(int(pos.y)), ruler_font_color)
-			draw_line(tf.xform(Vector2(0, point.y)), tf.xform(Vector2(ruler_width, point.y)), ruler_line_color, ruler_line_width)
+			if int(pos.y) % _get_grid_step() == 0:
+				draw_string(_get_ruler_font(), tf.xform(Vector2(_get_ruler_width(), point.y)), str(int(pos.y)), _get_ruler_font_color())
+			draw_line(tf.xform(Vector2(0, point.y)), tf.xform(Vector2(_get_ruler_width(), point.y)), _get_ruler_line_color(), _get_ruler_line_width())
 		pos.y += step.y
 	draw_set_transform_matrix(Transform2D.IDENTITY)
-	draw_line(Vector2.ONE * ruler_width, Vector2(ruler_width, rect_size.y), ruler_line_color, 2.0)
-
-
-func _update_theme() -> void:
-	background = get_stylebox("bg", "")
-	if has_constant("grid_step", ""):
-		grid_step = get_constant("grid_step", "")
-	if has_constant("grid_substeps", ""):
-		grid_substeps = get_constant("grid_substeps", "")
-	if has_constant("min_scale", ""):
-		min_scale = get_constant("min_scale", "")
-	if has_constant("max_scale", ""):
-		max_scale = get_constant("max_scale", "")
-	if has_constant("ruler_widht", ""):
-		ruler_width = get_constant("ruler_width", "")
-	ruler_font = get_font("ruler_font", "")
-	if has_constant("ruler_line_width", ""):
-		ruler_line_width = get_constant("ruler_line_width", "")
-	if has_color("ruler_font_color", ""):
-		ruler_font_color = get_color("ruler_font_color", "")
-	if has_color("ruler_line_color", ""):
-		ruler_line_color = get_color("ruler_line_color", "")
-	if has_constant("grid_major_line_width", ""):
-		grid_major_line_width = get_constant("grid_major_line_width", "")
-	if has_constant("grid_minor_line_width", ""):
-		grid_minor_line_width = get_constant("grid_minor_line_width", "")
-	if has_color("grid_major_line_color", ""):
-		grid_major_line_color = get_color("grid_major_line_color", "")
-	if has_color("grid_minor_line_color", ""):
-		grid_minor_line_color = get_color("grid_minor_line_color", "")
+	draw_line(Vector2.ONE * _get_ruler_width(), Vector2(_get_ruler_width(), rect_size.y), _get_ruler_line_color(), 2.0)
 
 
 func _remove_scroll_bar() -> void:
@@ -314,7 +259,7 @@ func _reset() -> void:
 
 
 func _scale(scale_to) -> void:
-	scale_to = max(min_scale / 100.0, min(scale_to, max_scale / 100.0))
+	scale_to = max(_get_min_scale() / 100.0, min(scale_to, _get_max_scale() / 100.0))
 	var mouse_from = position_to_offset(get_local_mouse_position())
 	var new = Transform2D.IDENTITY.scaled(Vector2.ONE * scale_to)
 	new.origin = transform.origin
@@ -322,3 +267,78 @@ func _scale(scale_to) -> void:
 	var mouse_to = position_to_offset(get_local_mouse_position())
 	transform.origin += mouse_from - mouse_to
 	self.transform = transform
+
+
+# theme
+func _get_background() -> StyleBox:
+	return get_stylebox("bg", "")
+	
+func _get_grid_step() -> int:
+	if has_constant("grid_step", ""):
+		return get_constant("grid_step", "")
+	return 128
+
+func _get_grid_substeps() -> int:
+	if has_constant("grid_substeps", ""):
+		 return get_constant("grid_substeps", "")
+	return 1
+
+func _get_min_scale() -> int:
+	if has_constant("min_scale", ""):
+		return get_constant("min_scale", "")
+	return 10# in procent
+
+func _get_max_scale() -> int:
+	if has_constant("max_scale", ""):
+		return get_constant("max_scale", "")
+	return 1000
+func _get_ruler_width() -> int:
+	if has_constant("ruler_widht", ""):
+		 return get_constant("ruler_width", "")
+	return 16
+
+func _get_ruler_line_step() -> int:
+	if has_constant("ruler_line_step", ""):
+		return get_constant("ruler_line_step", "")
+	return 128
+
+func _get_ruler_font() -> Font:
+	return get_font("ruler_font", "")
+
+func _get_ruler_line_width() -> int:
+	if has_constant("ruler_line_width", ""):
+		return get_constant("ruler_line_width", "")
+	return 1
+
+func _get_ruler_font_color() -> Color:
+	if has_color("ruler_font_color", ""):
+		return get_color("ruler_font_color", "")
+	return Color.white
+
+func _get_ruler_line_color() -> Color:
+	if has_color("ruler_line_color", ""):
+		return get_color("ruler_line_color", "")
+	return Color.white
+
+func _get_grid_major_line_width() -> int:
+	if has_constant("grid_major_line_width", ""):
+		return get_constant("grid_major_line_width", "")
+	return 2
+
+func _get_grid_minor_line_width() -> int:
+	if has_constant("grid_minor_line_width", ""):
+		 return get_constant("grid_minor_line_width", "")
+	return 1
+
+func _get_grid_major_line_color() -> Color:
+	if has_color("grid_major_line_color", ""):
+		return get_color("grid_major_line_color", "")
+	return Color.darkgray
+
+func _get_grid_minor_line_color() -> Color:
+	if has_color("grid_minor_line_color", ""):
+		return get_color("grid_minor_line_color", "")
+	return Color.gray
+
+
+# theme settings
