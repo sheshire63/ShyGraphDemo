@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://addons/ShyGraph/ShyGraphNode.gd" type="Script" id=1]
 [ext_resource path="res://addons/ShyGraph/ShyGraphEdit.gd" type="Script" id=2]
 [ext_resource path="res://EditorTest.gd" type="Script" id=3]
 [ext_resource path="res://Demo.gd" type="Script" id=4]
+[ext_resource path="res://Nodes/Node.gd" type="Script" id=5]
 
 [node name="Demo" type="Control"]
 anchor_right = 1.0
@@ -16,6 +17,7 @@ anchor_bottom = 1.0
 rect_clip_content = true
 mouse_filter = 1
 script = ExtResource( 2 )
+node_folder = "res://Nodes"
 line_type = 1
 types = [ {
 "color": Color( 1, 1, 1, 1 ),
@@ -32,8 +34,10 @@ types = [ {
 } ]
 
 [node name="ShyGraphNode" type="Control" parent="ShyGraphEdit"]
-margin_right = 118.0
-margin_bottom = 64.0
+margin_left = 378.0
+margin_top = 143.0
+margin_right = 496.0
+margin_bottom = 207.0
 rect_min_size = Vector2( 118, 64 )
 script = ExtResource( 1 )
 edit_title = false
@@ -58,6 +62,15 @@ slots = [ {
 "target_slot": 0,
 "type": 1
 } ]
+
+[node name="Node" type="Control" parent="ShyGraphEdit"]
+margin_left = 108.0
+margin_top = 162.0
+margin_right = 190.0
+margin_bottom = 226.0
+rect_min_size = Vector2( 82, 64 )
+script = ExtResource( 5 )
+slots = [  ]
 
 [node name="EditorTest2" type="Node" parent="."]
 script = ExtResource( 3 )

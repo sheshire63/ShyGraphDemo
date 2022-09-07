@@ -38,7 +38,6 @@ var types := [] setget _set_types; func _set_types(new) -> void:
 export(line_types) var line_type := line_types.line
 
 var node_menu := PopupMenu.new()
-var _node_menu_from_empty := PopupMenu.new()
 var nodes := {}
 var connections := []
 var selected_nodes := []
@@ -48,14 +47,16 @@ var _hover_slot := {}
 var _break_from: Vector2
 var _select_from : Vector2
 var _copy_data: Dictionary
+var _node_menu_from_empty := PopupMenu.new()
 
 #theme
-var break_line_color := Color.red
-var break_line_width := 1
-var line_width := 5
-var selection_fill_color := Color(0.5, 0.5, 0.5, 0.5)
-var selection_stroke_color := Color.gray
-var selection_stroke_width := 1.0
+var _break_line_color := Color.red
+var _break_line_width := 1
+var _line_width := 5
+var _selection_fill_color := Color(0.5, 0.5, 0.5, 0.5)
+var _selection_stroke_color := Color.gray
+var _selection_stroke_width := 1.0
+
 
 
 func _get_property_list() -> Array:
@@ -77,7 +78,6 @@ func _get_property_list() -> Array:
 
 func _ready() -> void:
 	if !owner or (Engine.editor_hint and owner.get_parent() is Viewport):
-		#add menu?
 		return
 	node_menu.connect("id_pressed", self, "_on_node_menu_id_pressed")
 	add_child(node_menu)
@@ -145,10 +145,10 @@ func _draw() -> void:
 	_draw_connections()
 	_draw_create_connection()
 	if _break_from:
-		draw_line(_break_from, position_to_offset(get_local_mouse_position()), break_line_color, break_line_width)
+		draw_line(_break_from, position_to_offset(get_local_mouse_position()), _break_line_color, _break_line_width)
 	if _select_from:
-		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), selection_fill_color)
-		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), selection_stroke_color, false, selection_stroke_width)
+		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), _selection_fill_color)
+		draw_rect(Rect2(_select_from, position_to_offset(get_local_mouse_position()) - _select_from), _selection_stroke_color, false, _selection_stroke_width)
 
 
 
@@ -302,6 +302,11 @@ func add_type(type := {}) -> void:
 	types.append(type)
 
 
+func add_node_type(node: ShyGraphNode) -> void:
+	if not node.nme in nodes:
+		node_menu.add_item(node.name)
+	nodes[node.name] = node
+
 
 # events
 
@@ -426,7 +431,7 @@ func _create_line(connection: Dictionary) -> Dictionary:
 func _draw_connections() -> void:
 	for i in connections:
 		var line_data = _create_line(i)
-		draw_polyline_colors(line_data.line, line_data.colors, line_width)
+		draw_polyline_colors(line_data.line, line_data.colors, _line_width)
 
 
 func _draw_create_connection() -> void:
@@ -449,7 +454,7 @@ func _load_nodes() -> void:
 			dir.list_dir_begin()
 			var file = dir.get_next()
 			while file != "":
-				if not file.begins_with("_") and file.get_extension() in [".tscn", ".scn", ".gd"]:
+				if not file.begins_with("_") and file.get_extension() in [".tscn", ".scn"]:
 					var node = load(node_folder + "/" + file)
 					var node_name = file.get_basename()
 					nodes[node_name] = node
@@ -560,17 +565,17 @@ func _disconnect_slot(node: String, slot: int) -> void:
 func _update_theme() -> void:
 	._update_theme()
 	if has_color("break_line_color", ""):
-		break_line_color = get_color("break_line_color", "")
+		_break_line_color = get_color("break_line_color", "")
 	if has_constant("break_line_width", ""):
-		break_line_width = get_constant("break_line_width", "")
+		_break_line_width = get_constant("break_line_width", "")
 	if has_constant("line_width", ""):
-		line_width = get_constant("line_width", "")
+		_line_width = get_constant("line_width", "")
 	if has_color("selection_fill_color", ""):
-		selection_fill_color = get_color("selection_fill_color", "")
+		_selection_fill_color = get_color("selection_fill_color", "")
 	if has_color("selection_stroke_color", ""):
-		selection_stroke_color = get_color("selection_stroke_color", "")
+		_selection_stroke_color = get_color("selection_stroke_color", "")
 	if has_constant("selection_stroke_width", ""):
-		selection_stroke_width = get_constant("selection_stroke_width", "")
+		_selection_stroke_width = get_constant("selection_stroke_width", "")
 
 
 func _clear() -> void:
@@ -766,3 +771,5 @@ func _include_node_in_rect(node:ShyGraphNode, rect: Rect2) -> Rect2:
 	rect = rect.expand(node.offset)
 	rect = rect.expand(node.offset + node.rect_size)
 	return rect
+
+
