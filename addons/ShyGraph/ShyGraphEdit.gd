@@ -82,7 +82,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if _create_connection_from or _break_from or _select_from:
+	if (_create_connection_from and !_node_menu_from_empty.visible) or _break_from or _select_from:
 		update()
 
 
@@ -638,7 +638,6 @@ func _delete_node(node: ShyGraphNode) -> void:
 
 	_deselect(node)
 	remove_child(node)
-	#node.queue_free()# we dont free it beacause of the undo
 
 
 func _restore_nodes(nodes: Array) -> void:
