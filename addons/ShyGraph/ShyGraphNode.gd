@@ -11,7 +11,8 @@ signal slot_changed(slot, id)
 signal slot_removed(slot, id)
 signal selected
 signal deselected
-signal delete
+signal request_delete
+signal rename(old, new)
 
 signal _request_select()
 
@@ -64,6 +65,7 @@ func _get_property_list() -> Array:
 
 func _init() -> void:
 	rect_min_size = Vector2(max(64, rect_min_size.x), max(64, rect_min_size.y))
+	focus_mode = Control.FOCUS_CLICK
 	
 
 func _ready() -> void:
@@ -102,6 +104,7 @@ func _notification(what: int) -> void:
 		NOTIFICATION_RESIZED:
 			for i in _slot_controls:
 				_slot_controls[i].update_position()
+			get_parent().update()
 
 
 func _draw() -> void:
@@ -153,15 +156,13 @@ func copy():
 
 func delete() -> void:
 	_delete()
-	emit_signal("delete")
-	self.queue_free()
+	emit_signal("request_delete")
 
 
 #slot functions----------------------------------------------------
 
 
 func new_slot(active := true, offset := Vector2.ZERO, size := Vector2.ONE, anchor := "", type := 0, allign := 1, side := 0) -> Dictionary:
-	print("mew")
 	return {
 		"active": active,
 		"offset": offset,
@@ -262,9 +263,14 @@ func _copy(copy) -> void:#if you need to set somthing in the copy.
 
 # events
 
-func _on_titel_changed(text: String, sender) -> void:
+func _on_titel_changed(_text: String, sender) -> void:#todo  change to on text entered (focus lost)
+	var text = sender.text
+	if text == "":
+		return
+	var old = name
 	name = text
 	sender.text = name
+	emit_signal("rename", old, name)
 
 
 # private funcs----------------------------------------------------
@@ -338,9 +344,7 @@ func _clear_slots() -> void:
 func _setup_slots() -> void:
 	for i in slots.size():
 		if !slots[i]:
-			print("new")
 			slots[i] = new_slot()
-			print(slots[i])
 		_add_slot_control(slots[i], i)
 
 
@@ -404,7 +408,8 @@ func _add_titel_bar() -> void:
 	var control
 	if edit_title:
 		control = LineEdit.new()
-		control.connect("text_changed", self, "_on_titel_changed", [control])
+		control.connect("text_entered", self, "_on_titel_changed", [control])
+		control.connect("focus_exited", self, "_on_titel_changed", ["", control])
 	else:
 		control = Label.new()
 		control.mouse_filter = MOUSE_FILTER_PASS

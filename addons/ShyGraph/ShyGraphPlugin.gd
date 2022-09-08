@@ -118,13 +118,15 @@ func laod_nodes_from_folder() -> void:#todo add undo?
 				if not file_path.get_extension() in ["tscn", "scn"]:
 					file_path = dir.get_next()
 					continue
-				var new = load(node_folder + "/" + file_path)
+				var new = load(node_folder + "/" + file_path).instance()
 				if new and new is ShyGraphNode:
-					if has_node(new):
-						var old := get_node(new)
-						remove_child(old)
+					if object.has_node(new.name):
+						var old: Node = object.get_node(new.name)
+						object.remove_child(old)
 						old.queue_free()
-					add_child(new)
+					object.add_node_at_center(new)
+
+					new.owner = object.owner
 				file_path = dir.get_next()
 			dir.list_dir_end()
 		else:
@@ -136,7 +138,7 @@ func save_nodes_to_folder() -> void:
 	if !node_folder:
 		printerr("No Node Folder defined")
 		return
-	for node in get_children():
+	for node in object.get_children():
 		if node is ShyGraphNode:
 			var node_scene = PackedScene.new()
 			var result = node_scene.pack(node)

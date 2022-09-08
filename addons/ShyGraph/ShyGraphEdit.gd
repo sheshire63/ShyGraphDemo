@@ -370,12 +370,25 @@ func _on_node_deselected(node: ShyGraphNode) -> void:
 
 
 func _on_node_delete(node) -> void:
-	_delete_node(node)
+	undo.create_action("delete_node")
+	undo.add_undo_reference(node)
+	undo.add_do_method(self, "_delete_node", (node))
+	undo.add_undo_method(self, "add_child", node)
+	undo.commit_action()
 	emit_signal("node_removed", node)
 
 
 func _on_node_offset_changed(_offset, node) -> void:
 	self.area_rect = _include_node_in_rect(node, area_rect)
+
+
+func _on_node_renamed(old: String, new: String) -> void:
+	for i in connections:
+		if i.from.node == old:
+			i.from.node = new
+		if i.to.node == old:
+			i.to.node == new
+
 
 
 # private
@@ -384,6 +397,7 @@ func _create_line(connection: Dictionary) -> Dictionary:
 	var from: Dictionary = connection.from
 	var to: Dictionary = connection.to
 	if !has_node(from.node) or (to and !has_node(to.node)):
+		print(to)
 		printerr("node not found: %s"%(from.node if has_node(from.node) else to.node))
 		_remove_connection({"from": connection.from, "to": connection.to})
 		return {"line": [], "colors": []}
@@ -494,8 +508,9 @@ func _create_node_instance(node) -> ShyGraphNode:
 	node.connect("moved_to", self, "_on_node_moved_to", [node])
 	node.connect("selected", self, "_on_node_selected", [node])
 	node.connect("deselected", self, "_on_node_deselected", [node])
-	node.connect("delete", self, "_on_node_delete", [node])
+	node.connect("request_delete", self, "_on_node_delete", [node])
 	node.connect("_request_select", self, "_on_node_request_select")
+	node.connect("rename", self, "_on_node_renamed")
 	return node
 
 
@@ -622,7 +637,8 @@ func _delete_node(node: ShyGraphNode) -> void:
 		emit_signal("disconnected", i.from, i.to)
 
 	_deselect(node)
-	node.queue_free()
+	remove_child(node)
+	#node.queue_free()# we dont free it beacause of the undo
 
 
 func _restore_nodes(nodes: Array) -> void:

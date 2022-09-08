@@ -5,24 +5,10 @@
 [node name="Flow" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -960.0
-margin_bottom = -536.0
-rect_min_size = Vector2( 64, 64 )
+margin_left = 530.0
+margin_top = 236.0
+margin_right = -412.0
+margin_bottom = -300.0
+rect_min_size = Vector2( 82, 64 )
 script = ExtResource( 1 )
-slot_data = [ {
-"allignment": 5,
-"anchor_to_child": -1,
-"id": 0,
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": 3.0,
-"type": 0
-}, {
-"allignment": 5,
-"anchor_to_child": -1,
-"id": 0,
-"offset": Vector2( 0, 0 ),
-"side": 0,
-"size": 3.0,
-"type": 0
-} ]
+slots = [  ]

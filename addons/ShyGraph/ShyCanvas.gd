@@ -30,7 +30,6 @@ var transform := Transform2D.IDENTITY setget _set_offset; func _set_offset(new) 
 		update()
 var area_rect := Rect2() setget _set_area_rect; func _set_area_rect(new) -> void:
 		if new != area_rect:
-			printt(area_rect, new)
 			area_rect = new
 			_update_bars()
 			update()
@@ -60,7 +59,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _unhandled_key_input(event: InputEventKey) -> void:
-	if event.scancode == KEY_Z and event.control == true:
+	if event.pressed and event.scancode == KEY_Z and event.control == true:
 		if event.shift:
 			undo.redo()
 		else:

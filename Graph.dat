@@ -1,32 +1,5 @@
 {
-"connections": [ {
-"from": {
-"node": "ShyGraphNode16",
-"slot": 1
-},
-"to": {
-"node": "ShyGraphNode2",
-"slot": 0
-}
-} ],
+"connections": [  ],
 "nodes": {
-"ShyGraphNode16": {
-"data": {
-},
-"offset": Vector2( -209, -4.00002 ),
-"type": "ShyGraphNode"
-},
-"ShyGraphNode2": {
-"data": {
-},
-"offset": Vector2( 101, -79 ),
-"type": "ShyGraphNode"
-},
-"ShyGraphNode3": {
-"data": {
-},
-"offset": Vector2( 140, 35 ),
-"type": "ShyGraphNode"
-}
 }
 }
