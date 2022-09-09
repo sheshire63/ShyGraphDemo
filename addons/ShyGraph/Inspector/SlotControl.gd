@@ -9,7 +9,7 @@ onready var c_side := $Box/Side
 onready var c_allign := $Box/Allign
 onready var c_offset_x := $Box/Offset/OffsetX
 onready var c_offset_y := $Box/Offset/OffsetY
-onready var c_anchor := $Box/AnchorChild
+onready var c_anchor := $Box/Anchor/AnchorPath
 onready var c_size_x := $Box/Size/SizeX
 onready var c_size_y := $Box/Size/SizeY
 

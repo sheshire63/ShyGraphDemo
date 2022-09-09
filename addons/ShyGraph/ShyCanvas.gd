@@ -13,7 +13,9 @@ signal scale_changed
 signal area_rect_changed
 
 
-export var ruler := true
+export var ruler := true setget _set_ruler; func _set_ruler(new) -> void:
+		ruler = new
+		update()
 export var scroll_bar := true setget _set_scroll_bar; func _set_scroll_bar(new):
 		if scroll_bar != new:
 			scroll_bar = new

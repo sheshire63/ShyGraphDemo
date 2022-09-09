@@ -34,7 +34,7 @@ var types := [] setget _set_types; func _set_types(new) -> void:
 				new[i] = new_type()
 		types = new
 		update()
-# 		_update_nodes()
+		_update_nodes()
 export(line_types) var line_type := line_types.line
 
 var node_menu := PopupMenu.new()
@@ -799,3 +799,10 @@ func _get_selection_stroke_width() -> int:
 	if has_constant("selection_stroke_width", ""):
 		return get_constant("selection_stroke_width", "")
 	return 1
+
+
+func _update_nodes() -> void:
+	for i in get_children():
+		if i is ShyGraphNode:
+			i.update()
+			i.update_slots()

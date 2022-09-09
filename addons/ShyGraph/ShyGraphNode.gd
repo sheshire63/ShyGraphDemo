@@ -195,6 +195,11 @@ func get_slot_offset(slot_index: int) -> Vector2:
 	return _get_slot_offset(slots[slot_index]) + offset
 
 
+func update_slots() -> void:
+	for i in slots:
+		update_slot(i)
+
+
 func update_slot(slot: Dictionary) -> void:
 	var index = slots.find(slot)
 	if index in _slot_controls:#slot gets checked as value not as reference or the slot in button is not the same

@@ -19,7 +19,7 @@ script = ExtResource( 2 )
 node_folder = "res://Nodes"
 line_type = 1
 types = [ {
-"color": Color( 0.592157, 0.14902, 0.14902, 1 ),
+"color": Color( 0.964706, 0.952941, 0.952941, 1 ),
 "connections": [ 0 ],
 "multiple": true,
 "name": "TypeA",
