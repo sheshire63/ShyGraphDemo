@@ -1,12 +1,27 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://Nodes/Node.gd" type="Script" id=1]
+[ext_resource path="res://addons/ShyGraph/ShyGraphNode.gd" type="Script" id=1]
 
 [node name="Node" type="Control"]
-margin_left = 177.0
-margin_top = 159.0
-margin_right = 259.0
-margin_bottom = 223.0
+margin_right = 82.0
+margin_bottom = 64.0
 rect_min_size = Vector2( 82, 64 )
+focus_mode = 1
 script = ExtResource( 1 )
-slots = [  ]
+slots = [ {
+"active": true,
+"allign": 1,
+"anchor": "",
+"offset": Vector2( 0, 0 ),
+"side": 1,
+"size": Vector2( 1, 1 ),
+"type": 0
+}, {
+"active": true,
+"allign": 0,
+"anchor": "",
+"offset": Vector2( 27, 0 ),
+"side": 3,
+"size": Vector2( 1, 1 ),
+"type": 0
+} ]

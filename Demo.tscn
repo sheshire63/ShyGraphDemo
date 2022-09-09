@@ -50,6 +50,10 @@ slots = [ {
 "type": 0
 } ]
 
+[node name="CheckBox" type="CheckBox" parent="ShyGraphEdit/Node"]
+margin_right = 24.0
+margin_bottom = 24.0
+
 [node name="EditorTest2" type="Node" parent="."]
 script = ExtResource( 3 )
 data = {
