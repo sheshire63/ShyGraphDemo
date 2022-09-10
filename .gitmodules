@@ -1,0 +1,3 @@
+[submodule "addons/ShyGraph"]
+	path = addons/ShyGraph
+	url = https://github.com/sheshire63/ShyGraph.git
