@@ -246,12 +246,13 @@ func get_type_size(type: int) -> Vector2:
 	return types[type].size
 
 
-func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), multiple:= true, connections := []) -> Dictionary:
+func new_type(label := "Type", color := Color.white, size := Vector2(8, 8), multiple:= true, same_side := false,connections := []) -> Dictionary:
 	return {
 		"name": label,
 		"color": color,
 		"size": size,
 		"multiple": multiple,
+		"same_side": same_side,
 		"connections": connections,
 		}
 
@@ -550,11 +551,14 @@ func _end_select_drag() -> void:
 
 
 func _is_connection_allowed(from: Dictionary, to: Dictionary) -> bool:
-	if from.hash() == to.hash():
+	if from.hash() == to.hash():#prevent connection to self
 		return false
 	var from_slot = get_node(from.node).get_slot(from.slot)
 	var to_slot = get_node(to.node).get_slot(to.slot)
 	var conns = types[from_slot.type].connections
+	if from_slot.side == to_slot.side:
+		if !types[from_slot.type].same_side or !types[to_slot.type].same_side:
+			return false
 	if to_slot.type in conns:
 		return true
 	conns = types[to_slot.type].connections

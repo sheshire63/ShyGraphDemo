@@ -70,10 +70,23 @@ margin_bottom = 128.0
 text = "Multiple"
 align = 1
 
-[node name="Connect2" type="VBoxContainer" parent="Box"]
+[node name="SameSide" type="CheckBox" parent="Box"]
 margin_top = 132.0
 margin_right = 1024.0
-margin_bottom = 132.0
+margin_bottom = 156.0
+text = "Connect to same Side"
+align = 1
+
+[node name="Label" type="Label" parent="Box"]
+margin_top = 160.0
+margin_right = 1024.0
+margin_bottom = 174.0
+text = "Connections"
+
+[node name="Connect2" type="VBoxContainer" parent="Box"]
+margin_top = 178.0
+margin_right = 1024.0
+margin_bottom = 178.0
 
 [connection signal="toggled" from="Show" to="." method="_on_Show_toggled"]
 [connection signal="text_changed" from="Box/Name" to="." method="_on_Name_text_changed"]
@@ -81,3 +94,4 @@ margin_bottom = 132.0
 [connection signal="value_changed" from="Box/Size/X" to="." method="_on_X_value_changed"]
 [connection signal="value_changed" from="Box/Size/Y" to="." method="_on_Y_value_changed"]
 [connection signal="toggled" from="Box/Multiple" to="." method="_on_Multiple_toggled"]
+[connection signal="toggled" from="Box/SameSide" to="." method="_on_SameSide_toggled"]

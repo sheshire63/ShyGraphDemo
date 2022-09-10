@@ -11,6 +11,7 @@ onready var c_color := $Box/Color
 onready var c_size_x := $Box/Size/X
 onready var c_size_y := $Box/Size/Y
 onready var c_multiple := $Box/Multiple
+onready var c_same_side := $Box/SameSide
 onready var c_connect_to := $Box/Connect2
 
 onready var c_show := $Show
@@ -26,6 +27,7 @@ func _set_type(new):
 	c_size_x.value = new.size.x
 	c_size_y.value = new.size.y
 	c_multiple.pressed = new.multiple
+	c_same_side.pressed = new.same_side
 	_setup_connect_to()
 
 
@@ -68,6 +70,11 @@ func _on_Multiple_toggled(button_pressed:bool) -> void:
 	_update()
 
 
+func _on_SameSide_toggled(button_pressed:bool) -> void:
+	type.same_side = button_pressed
+	_update()
+
+
 func _setup_connect_to() -> void:
 	if !edit:
 		return
@@ -77,6 +84,7 @@ func _setup_connect_to() -> void:
 	for i in edit.types.size():
 		var control = CheckBox.new()
 		control.text = str(edit.types[i].name)
+		control.pressed = i in type.connections
 		control.connect("toggled", self, "_on_connect_to_toggled", [i])
 		c_connect_to.add_child(control)
 
@@ -109,3 +117,5 @@ func _on_connect_to_toggled(pressed: bool, id: int) -> void:
 		if id in type.connections:
 			type.connections.erase(id)	
 	_update()
+
+
