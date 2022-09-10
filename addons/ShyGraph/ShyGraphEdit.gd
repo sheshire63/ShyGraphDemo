@@ -30,8 +30,7 @@ signal node_deselected (node)
 export(String, DIR) var node_folder := ""
 var types := [] setget _set_types; func _set_types(new) -> void:
 		for i in new.size():
-			if !new[i]:
-				new[i] = new_type()
+			new[i].merge(new_type())
 		types = new
 		update()
 		_update_nodes()
